@@ -52,6 +52,7 @@ jobs:
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist bindaaz-buildz --branch=main
+           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+           wranglerVersion: "4"
+           command: pages deploy dist --project-name=bindaaz-buildz --branch=main
