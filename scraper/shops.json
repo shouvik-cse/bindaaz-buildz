@@ -1,0 +1,48 @@
+{
+ "_how": "Each shop lists its category pages. Paths are tried with ?page=1, ?page=2 ... until a page has no new products. 'card' selectors are optional: if they find nothing, a generic product-card finder is used. Run `python scraper/crawl.py --check` after editing to see how many products each category page gives.",
+ "shops": [
+  {
+   "name": "Star Tech",
+   "base": "https://www.startech.com.bd",
+   "card": {"item": ".p-item", "name": ".p-item-name a", "price": ".p-item-price"},
+   "categories": {
+    "cpu": "/component/processor",
+    "cooler": "/component/CPU-Cooler",
+    "board": "/component/motherboard",
+    "ram": "/component/ram",
+    "ssd": "/ssd",
+    "gpu": "/component/graphics-card",
+    "psu": "/component/power-supply",
+    "case": "/component/casing"
+   }
+  },
+  {
+   "name": "Ryans",
+   "base": "https://www.ryans.com",
+   "categories": {
+    "cpu": "/category/desktop-component-processor",
+    "cooler": "/category/desktop-component-cpu-cooler",
+    "board": "/category/desktop-component-motherboard",
+    "ram": "/category/desktop-component-desktop-ram",
+    "ssd": "/category/internal-ssd",
+    "gpu": "/category/desktop-component-graphics-card",
+    "psu": "/category/desktop-component-power-supply",
+    "case": "/category/desktop-component-casing"
+   }
+  },
+  {
+   "name": "Tech Land",
+   "base": "https://www.techlandbd.com",
+   "categories": {
+    "cpu": "/pc-components/processor",
+    "cooler": "/pc-components/cpu-cooler",
+    "board": "/pc-components/motherboard",
+    "ram": "/pc-components/desktop-ram",
+    "ssd": "/pc-components/solid-state-drive",
+    "gpu": "/pc-components/graphics-card",
+    "psu": "/pc-components/power-supply",
+    "case": "/pc-components/computer-case"
+   }
+  }
+ ]
+}
