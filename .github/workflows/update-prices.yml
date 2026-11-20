@@ -52,7 +52,7 @@ jobs:
       - name: Check Cloudflare secrets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: 2ffac4a3d6fa72d16813f14a66d9e393
         run: |
           [ -n "$CLOUDFLARE_API_TOKEN" ] || { echo "::error::Secret CLOUDFLARE_API_TOKEN is missing or empty"; exit 1; }
           [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Secret CLOUDFLARE_ACCOUNT_ID is missing or empty"; exit 1; }
@@ -62,5 +62,5 @@ jobs:
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: 2ffac4a3d6fa72d16813f14a66d9e393
         run: npx --yes wrangler@4 pages deploy dist --project-name=bindaaz-buildz --branch=main --commit-dirty=true
