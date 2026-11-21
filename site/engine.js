@@ -236,13 +236,29 @@ function upgrade(x,budget,use){
   const cands=D[slot].filter(o=>avail(o)&&pr(o)>pr(cur)&&(o.from||0)<=budget&&(slot!=='board'||(boardFit(x.cpu,o)&&boardUsable(o)&&o.t<=Math.max(x.cpu.t,cap)))&&(slot!=='ssd'||o.gb===cur.gb)).sort((a,b)=>pr(b)-pr(a));
   for(const o of cands){const y={...x,[slot]:o};if(valid(y)&&total(y)<=budget){x=y;break}}}
  return x}
-function search(budget,use){MEMO.clear();const[cs,gs]=pool();const rq={ram:O.ram||16,ssd:O.ssd||512};let best=null,minT=Infinity;
+function search(budget,use,rq){MEMO.clear();const[cs,gs]=pool();let best=null,minT=Infinity;
  for(const c of cs)for(const g of gs){if(g.id==='none'&&!c.ig)continue;
   const m=minRest(c,g,rq);if(!m)continue;minT=Math.min(minT,m.t);if(m.t>budget)continue;
   const sc=score(c,g,use)-m.t*1e-6;if(!best||sc>best.sc)best={sc,x:m.x}}
  return best?{x:upgrade(best.x,budget,use)}:{min:minT}}
 /* A520/A620 boards are used only when nothing else fits the budget */
-BB.build=function(budget,use){allowA=false;let r=search(budget,use);if(!r.x&&O.avoidA){allowA=true;r=search(budget,use);allowA=false}return r};
+function attempt(budget,use,rq){allowA=false;let r=search(budget,use,rq);if(!r.x&&O.avoidA){allowA=true;r=search(budget,use,rq);allowA=false}return r}
+/* Bigger budgets (৳1.5 lakh+): when RAM or storage is on Auto, try more of it, in the order that
+   suits the use, and keep it only if the build still gets the same processor and graphics card
+   (editing builds: within 5% of the same CPU/GPU score). So extra memory or storage never
+   unbalances the CPU/GPU pairing. */
+const MORE=BB.MORE={
+ gaming:[[32,1000],[16,1000],[32,512]],creator:[[32,1000],[32,512],[16,1000]],office:[[16,1000],[32,1000]],
+ gaming3:[[32,2000],[32,1000],[16,2000],[16,1000],[32,512]],creator3:[[64,2000],[32,2000],[64,1000],[32,1000],[32,512],[16,1000]],office3:[[32,1000],[16,1000]]};
+/* editing builds may give up a little CPU/GPU score for memory and storage they really use */
+const TRADE={creator:.05};
+BB.build=function(budget,use){const rq0={ram:O.ram||16,ssd:O.ssd||512};const r=attempt(budget,use,rq0);
+ if(!r.x||budget<150000||(O.ram&&O.ssd))return r;
+ for(const[ram,ssd]of MORE[use+(budget>=300000?'3':'')]||[]){const rq={ram:O.ram||ram,ssd:O.ssd||ssd};
+  if(rq.ram<=rq0.ram&&rq.ssd<=rq0.ssd)continue;
+  const y=attempt(budget,use,rq);if(!y.x)continue;const same=y.x.cpu===r.x.cpu&&y.x.gpu===r.x.gpu;
+  if(same||score(y.x.cpu,y.x.gpu,use)>=score(r.x.cpu,r.x.gpu,use)*(1-(TRADE[use]||0))){y.more={ram:y.x.ram.gb>r.x.ram.gb,ssd:y.x.ssd.gb>r.x.ssd.gb,same};if(y.more.ram||y.more.ssd)return y}}
+ return r};
 BB.options=function(slot,x){return D[slot].filter(o=>{
  if(slot==='cpu')return o.s===x.board.s&&boardOk(o,x.board);
  if(slot==='board')return boardOk(x.cpu,o)&&(o.mem===x.ram.mem||!!R.find(r=>r.mem===o.mem));

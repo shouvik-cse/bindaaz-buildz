@@ -166,10 +166,12 @@ def card_img(node, base):
     return None
 
 
-def page_url(base, n):
+def page_url(base, n, paging="query"):
     if n == 1:
         return base
     p = urlparse(base)
+    if paging == "path":  # WordPress / WooCommerce: /category/page/2/
+        return urlunparse(p._replace(path=p.path.rstrip("/") + f"/page/{n}/"))
     q = dict(parse_qsl(p.query))
     q["page"] = str(n)
     return urlunparse(p._replace(query=urlencode(q)))
@@ -239,7 +241,7 @@ def cards_generic(soup, url, skip_paths):
 
 def parse_listing(html, url, shop):
     soup = BeautifulSoup(html, "html.parser")
-    skip = {urlparse(urljoin(shop["base"], c)).path.rstrip("/") for c in shop["categories"].values()}
+    skip = {urlparse(urljoin(shop["base"], c)).path.rstrip("/") for c in paths_of(shop)}
     cards = cards_by_selector(soup, url, shop["card"]) if shop.get("card") else []
     if not cards:
         cards = cards_generic(soup, url, skip)
@@ -251,11 +253,60 @@ def parse_listing(html, url, shop):
     return out
 
 
+def paths_of(shop):
+    out = []
+    for v in shop["categories"].values():
+        out += v if isinstance(v, list) else [v]
+    return out
+
+
+# words that name a category in a shop's menu; used to find a category page when the configured paths fail
+CAT_WORDS = {
+    "cpu": r"processors?|cpu", "cooler": r"cpu coolers?|coolers?|cpu cooling", "board": r"motherboards?|mainboards?",
+    "ram": r"desktop ram|ram|memory|desktop memory", "ssd": r"ssd|ssds|solid state drives?|internal ssd",
+    "gpu": r"graphics cards?|gpu|vga|video cards?", "psu": r"power supply|power supplies|psu", "case": r"casing|casings|case|cases|chassis|pc case",
+}
+
+
+def discover(shop, cat, tried):
+    """Open the shop's hub pages and return same-site links whose text is just the category name."""
+    rx = re.compile(r"^(?:" + CAT_WORDS[cat] + r")$", re.I)
+    host = urlparse(shop["base"]).netloc
+    found = []
+    for hub in shop.get("discover", []):
+        status, html = get(urljoin(shop["base"], hub))
+        if status != 200:
+            continue
+        for a in BeautifulSoup(html, "html.parser").find_all("a", href=True):
+            href = urljoin(shop["base"], a["href"]).split("#")[0]
+            if urlparse(href).netloc != host or href in tried or href in found:
+                continue
+            if rx.match(clean(a.get_text(" ")).rstrip(" »›>")):
+                found.append(href)
+    return found[:3]
+
+
 def crawl_category(shop, cat, path, max_pages):
-    base = urljoin(shop["base"], path)
+    """path may be one path or a list of candidates; the first that gives products wins.
+    If none does, links named after the category on the shop's hub pages are tried."""
+    cands = [urljoin(shop["base"], p) for p in (path if isinstance(path, list) else [path])]
+    err = None
+    for url in cands:
+        items, err = crawl_listing(shop, url, max_pages)
+        if items:
+            return items, None
+    for url in discover(shop, cat, set(cands)):
+        print(f"    trying {url} (found in the shop's menu)", file=sys.stderr)
+        items, e = crawl_listing(shop, url, max_pages)
+        if items:
+            return items, None
+    return [], err
+
+
+def crawl_listing(shop, base, max_pages):
     items, seen = [], set()
     for n in range(1, max_pages + 1):
-        url = page_url(base, n)
+        url = page_url(base, n, shop.get("paging", "query"))
         status, html = get(url)
         if status != 200:
             print(f"    page {n}: {status}", file=sys.stderr)
@@ -324,7 +375,7 @@ def main():
         for cat, path in shop["categories"].items():
             if args.cat and cat != args.cat:
                 continue
-            print(f"{shop['name']} / {cat}: {path}")
+            print(f"{shop['name']} / {cat}: {path if isinstance(path, str) else ' | '.join(path)}")
             raw, err = crawl_category(shop, cat, path, 1 if args.check else args.pages)
             got = finish(raw, shop["name"], cat)
             used = sum(1 for g in got if "m" in g or "a" in g)

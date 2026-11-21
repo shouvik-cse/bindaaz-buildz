@@ -103,6 +103,11 @@ def models(block):
 
 
 AFF = {k: v for k, v in (CFG.get("affiliate_templates") or {}).items() if v}
+_SHOPS = json.loads((ROOT / "scraper" / "shops.json").read_text(encoding="utf-8"))["shops"] if (ROOT / "scraper" / "shops.json").exists() else []
+SHOP_NAMES = [x["name"] for x in _SHOPS] or ["Star Tech", "Ryans", "Tech Land"]
+SHOP_HOSTS = {re.sub(r"^www\.", "", x["base"].split("//")[1].split("/")[0]): x["name"] for x in _SHOPS}
+SHOPS_TEXT = ", ".join(SHOP_NAMES[:-1]) + " and " + SHOP_NAMES[-1]
+SHOPS_SHORT = ", ".join(SHOP_NAMES[:3]) + (f" and {len(SHOP_NAMES) - 3} more shops" if len(SHOP_NAMES) > 3 else "")
 
 
 def buy(url, shop):
@@ -135,7 +140,7 @@ def head_extra():
         gid = E(CFG["ga4_measurement_id"])
         x.append(f'<script async src="https://www.googletagmanager.com/gtag/js?id={gid}"></script>'
                  f"<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments)}}gtag('js',new Date());gtag('config','{gid}');</script>")
-        x.append(SHOP_CLICK_JS)
+        x.append(f"<script>window.SHOPHOST={json.dumps(SHOP_HOSTS)}</script>" + SHOP_CLICK_JS)
     if CFG.get("cf_web_analytics_token"):
         tok = json.dumps({"token": CFG["cf_web_analytics_token"]})
         x.append(f"<script defer src=\"https://static.cloudflareinsights.com/beacon.min.js\" data-cf-beacon='{E(tok)}'></script>")
@@ -144,8 +149,8 @@ def head_extra():
 
 # Sends a "shop_click" event to Google Analytics whenever a visitor opens a shop link
 # (Buy buttons, product cards, price-page tables) — on every page of the site.
-SHOP_CLICK_JS = """<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a||!window.gtag)return;
-var h=a.hostname,s=/startech/.test(h)?'Star Tech':/ryans/.test(h)?'Ryans':/techland/.test(h)?'Tech Land':a.dataset.shop;if(!s)return;
+SHOP_CLICK_JS = r"""<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a||!window.gtag)return;
+var h=a.hostname.replace(/^www\./,''),s=window.SHOPHOST&&(SHOPHOST[h]||SHOPHOST[h.split('.').slice(-3).join('.')]||SHOPHOST[h.split('.').slice(-2).join('.')])||a.dataset.shop;if(!s)return;
 var c=a.closest('.row,.pcard,tr'),n=c&&c.querySelector('.nm,.pn,td');var cat=c&&c.querySelector('.cat,.pc');
 gtag('event','shop_click',{shop:s,product:((n&&n.textContent)||a.textContent||'').trim().slice(0,100),part_category:((cat&&cat.textContent)||'').trim(),link_url:a.href,page_path:location.pathname,transport_type:'beacon'})},true)</script>"""
 
@@ -303,7 +308,7 @@ def main():
 <p><a class="btn" href="{BASE}/?{q}={m['id']}&budget={sugg}#builder">Build a PC with the {E(short)}</a></p>
 <h2>All {E(short)} Listings</h2>{listing_table(L)}
 {f'<h2>Compare Similar Models</h2><div class="grid">{rel_html}</div>' if rel_html else ''}"""
-            urls.append(page(f"price/{slug}", f"{short} Price in Bangladesh ({month}) – Star Tech, Ryans, Tech Land",
+            urls.append(page(f"price/{slug}", f"{short} Price in Bangladesh ({month}) – Lowest Price from {len(SHOP_NAMES)} Shops",
                              f"{short} price in BD today: " + (f"from {tk(best['p'])} at {best['s']}. " if best else "") + f"Compare {len(L)} listings from {', '.join(shops)}. {m['sp']}.",
                              body, [("Price guides", f"{BASE}/price/"), (f"{CATS[cat][1]} prices", f"{BASE}/price/{CATS[cat][0]}/"), (short, url)],
                              offers_ld(short, L, url), upd_h))
@@ -350,7 +355,7 @@ def main():
 {summary}
 <h2>Every {cname} Listed</h2>{listing_table(L)}"""
         urls.append(page(f"price/{cslug}", f"{cname} Price in Bangladesh ({month}) – Compare {len(L):,} Listings",
-                         f"{cname} price list in BD: {len(L):,} products from Star Tech, Ryans and Tech Land" + (f", in stock from {tk(lo)}" if lo else "") + ". Updated " + upd_h + ".",
+                         f"{cname} price list in BD: {len(L):,} products from {SHOPS_SHORT}" + (f", in stock from {tk(lo)}" if lo else "") + ". Updated " + upd_h + ".",
                          body, [("Price guides", f"{BASE}/price/"), (f"{cname} prices", url)], None, upd_h))
         cat_cards.append(f'<a href="{url}"><b>{cname}</b><span>{len(L):,} listings{f" · from {tk(lo)}" if lo else ""}</span></a>')
 
@@ -358,7 +363,7 @@ def main():
     model_links = "".join(f'<a href="{u}">{E(short_name(m["n"]))} price</a>' for m in C + G if (u := model_url.get(m["id"])))
     if cat_cards:
         urls.append(page("price", f"PC Component Price List in Bangladesh ({month})",
-                         "Compare today's prices for processors, graphics cards, motherboards, RAM, SSDs, power supplies, casings and coolers from Star Tech, Ryans and Tech Land.",
+                         f"Compare today's prices for processors, graphics cards, motherboards, RAM, SSDs, power supplies, casings and coolers from {SHOPS_SHORT}.",
                          f"""<h1>PC Component Prices in Bangladesh</h1><p class="bn lead">কম্পিউটার পার্টসের দাম · {month}</p>
 <p class="lead">{len(items):,} products from {', '.join(catalog.get('shops', []))}, checked {upd_h}.</p>
 <div class="cards">{''.join(cat_cards)}</div><h2>Processor and Graphics Card Models</h2><div class="grid">{model_links}</div>""",
@@ -397,7 +402,7 @@ def main():
         page_html = page_html.replace('<meta property="og:url" content="__BASE__/">', f'<meta property="og:url" content="{url}">')
         page_html = re.sub(r'<meta property="og:title" content="[^"]*">', f'<meta property="og:title" content="{E(title)}">', page_html, count=1)
         page_html = re.sub(r'<h1 id="h1">.*?</h1>', f'<h1 id="h1">{E(en)} Under <em>{tk(b)}</em></h1>', page_html, count=1, flags=re.S)
-        page_html = re.sub(r'<p id="intro">.*?</p>', f'<p id="intro">{E(intro)}</p><p class="bn note">{tk(b)} বাজেটে {bn} বিল্ড</p>', page_html, count=1, flags=re.S)
+        page_html = re.sub(r'<p id="intro"[^>]*>.*?</p>', f'<p id="intro">{E(intro)}</p><p class="bn note">{tk(b)} বাজেটে {bn} বিল্ড</p>', page_html, count=1, flags=re.S)
         page_html = page_html.replace("<!--HEAD-EXTRA-->", f'<script>window.PRESET={{"budget":{b},"use":"{use}"}};window.ROOT="{BASE}/"</script><!--HEAD-EXTRA-->')
         # this copy lives two folders down, so its own files (engine.js, logo, icons) must point at the site root
         page_html = re.sub(r'\b(src|href)="(?!https?:|#|/|mailto:|data:|__BASE__)([^"]+\.(?:js|webp|png|ico|jpg|webmanifest|json))"',
@@ -421,7 +426,7 @@ def main():
             build_cards[use].append(f'<a class="bcard" href="{url}"><b>{tk(b)}</b><span>{en} under {words} taka</span></a>')
 
     urls.append(page("builds", f"Ready PC Builds by Budget in Bangladesh ({month})",
-                     "Gaming, editing and office PC builds for every budget from ৳45,000 to ৳4 lakh, with today's prices from Star Tech, Ryans and Tech Land.",
+                     f"Gaming, editing and office PC builds for every budget from ৳45,000 to ৳4 lakh, with today's prices from {SHOPS_SHORT}.",
                      "<h1>Ready PC Builds by Budget</h1><p class=\"bn lead\">বাজেট অনুযায়ী পিসি বিল্ড</p>"
                      "<p class=\"lead\">Each build is made fresh from parts in stock today and keeps every part compatible. Open one to see the parts and swap anything you like.</p>"
                      + "".join(f"<h2>{USE[u][0]} Builds</h2><div class=\"cards\">{''.join(c)}</div>" for u, c in build_cards.items()),
@@ -434,7 +439,7 @@ def main():
                      "বিন্দাজ Buildz is an independent PC-builder and price-comparison site for Bangladesh. How we collect prices, how builds are chosen and our disclaimer.",
                      f"""<h1>About বিন্দাজ Buildz</h1>
 <p class="lead">বিন্দাজ Buildz helps people in Bangladesh plan a desktop PC: pick a budget, get a complete and compatible build and see where each part is cheapest today.</p>
-<h2>Where Prices Come From</h2><p>A program reads the public category pages of Star Tech, Ryans and Tech Land several times a day and records each product's name, price, stock status and link. We are not affiliated with any of these shops and don't sell anything ourselves. Every product links to the shop's own page.</p>
+<h2>Where Prices Come From</h2><p>A program reads the public category pages of {SHOPS_TEXT} several times a day and records each product's name, price, stock status and link. We are not affiliated with any of these shops and don't sell anything ourselves. Every product links to the shop's own page.</p>
 <h2>How Builds Are Chosen</h2><p>The builder tries every processor and graphics card that fits your budget and choices. It scores each pairing for gaming, editing or office use and avoids lopsided pairs. It then adds a motherboard of the right class for the processor. Then it picks RAM, storage, power supply, case and cooler that are compatible and in stock. It checks socket, memory type, wattage, cooling and case size.</p>
 <h2>Disclaimer</h2><p>Prices and stock change quickly and may differ in the shop, online or with bundle offers. Always confirm the final price, stock and warranty with the shop before you pay. Performance descriptions are general guidance, not guarantees.</p>
 <h2>Privacy</h2><p>The site has no accounts. Your budget and choices are remembered only in your own browser.{' We count visits and clicks on shop links with Google Analytics and Cloudflare Web Analytics, to see which parts people are interested in.' if (CFG.get('ga4_measurement_id') or CFG.get('cf_web_analytics_token')) else ''}</p>

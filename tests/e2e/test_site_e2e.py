@@ -126,7 +126,8 @@ def test_U06_buy_links(browser, site_url):
     assert len(links) >= 7
     for text, href, rel, target in links:
         shop = text.replace("Buy at ", "")
-        domain = {"Star Tech": "startech.com.bd", "Ryans": "ryans.com", "Tech Land": "techlandbd.com"}[shop]
+        domain = {"Star Tech": "startech.com.bd", "Ryans": "ryans.com", "Tech Land": "techlandbd.com", "PCB Store": "pcbstore.com.bd",
+                  "Sumash Tech": "sumashtech.com", "Creatus Computer": "creatus.com.bd", "Computer Mania BD": "computermania.com.bd"}[shop]
         assert domain in href and "noopener" in rel and "nofollow" in rel and target == "_blank"
 
 
@@ -240,3 +241,68 @@ def test_U16_no_script_errors(browser, site_url, path):
     p.goto(site_url + path)
     p.wait_for_timeout(1200)
     assert not p.errors, p.errors
+
+
+def test_U17_swap_menu_has_search(browser, site_url):
+    """TC-U17 [FR-16] every swap menu opens a search box; typing narrows the list and Enter swaps the part."""
+    p = new_page(browser)
+    ready(p, site_url + "/")
+    row = p.locator("#sheet .row").nth(1)            # graphics card row
+    before = row.locator(".nm").inner_text()
+    row.locator(".sp-btn").click()
+    q = p.locator(".sp-pop input[type=search]")
+    assert q.is_visible() and q.evaluate("e => e === document.activeElement")
+    n_all = p.locator(".sp-pop .sp-o").count()
+    q.fill("rtx")
+    n_rtx = p.locator(".sp-pop .sp-o").count()
+    assert 0 < n_rtx < n_all
+    assert all("rtx" in t.lower() for t in p.locator(".sp-pop .sp-o").all_inner_texts())
+    q.press("ArrowDown")
+    q.press("Enter")
+    p.wait_for_function("!document.querySelector('.sp-pop')")
+    after = p.locator("#sheet .row").nth(1).locator(".nm").inner_text()
+    assert after != before and "RTX" in after.upper()
+
+
+def test_U18_processor_picker_search_and_escape(browser, site_url):
+    """TC-U18 [FR-06, FR-16] the processor picker is searchable; Escape closes it without changing anything."""
+    p = new_page(browser)
+    ready(p, site_url + "/")
+    btn = p.locator("#f .sp-btn").first
+    assert "Auto" in btn.inner_text()
+    btn.click()
+    p.fill(".sp-pop input[type=search]", "zzzz no such cpu")
+    assert "No match" in p.locator(".sp-pop").inner_text()
+    p.keyboard.press("Escape")
+    assert p.locator(".sp-pop").count() == 0 and "Auto" in btn.inner_text()
+    btn.click()
+    p.fill(".sp-pop input[type=search]", "7800X3D")
+    p.locator(".sp-pop .sp-o").first.click()
+    p.wait_for_function("document.querySelector('#sheet .row .nm').textContent.includes('7800X3D')")
+    assert "7800X3D" in btn.inner_text()
+
+
+def test_U19_price_list_search(browser, site_url):
+    """TC-U19 [FR-16] the price list has a search box for the open tab; no match shows a message."""
+    p = new_page(browser)
+    ready(p, site_url + "/")
+    p.evaluate("document.getElementById('prices').scrollIntoView()")
+    p.click("#tabs button[data-k='gpu']")
+    assert "graphics card" in p.get_attribute("#pq", "placeholder").lower()
+    p.fill("#pq", "5070")
+    p.wait_for_timeout(400)
+    rows = p.locator("#ptable tbody tr").all_inner_texts()
+    assert rows and all("5070" in r for r in rows)
+    p.fill("#pq", "qqqq")
+    p.wait_for_timeout(400)
+    assert "No part matches" in p.inner_text("#ptable")
+
+
+def test_U20_search_popup_fits_phone_screen(browser, site_url):
+    """TC-U20 [NFR-02] on a phone the search list opens as a bottom sheet inside the screen."""
+    p = new_page(browser, 390, 844, True)
+    ready(p, site_url + "/")
+    p.locator("#sheet .row .sp-btn").first.scroll_into_view_if_needed()
+    p.locator("#sheet .row .sp-btn").first.click()
+    box = p.locator(".sp-pop").bounding_box()
+    assert box["x"] >= 0 and box["x"] + box["width"] <= 390 and box["y"] >= 0 and box["y"] + box["height"] <= 844

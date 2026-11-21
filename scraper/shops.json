@@ -1,10 +1,14 @@
 {
- "_how": "Each shop lists its category pages. Paths are tried with ?page=1, ?page=2 ... until a page has no new products. 'card' selectors are optional: if they find nothing, a generic product-card finder is used. Run `python scraper/crawl.py --check` after editing to see how many products each category page gives.",
+ "_how": "Each shop lists its category pages. A category can be one path or a list of paths to try in order. Paths are read with ?page=1, ?page=2 ... (or /page/2/ when \"paging\" is \"path\") until a page has no new products. If none of the paths works, the crawler opens the shop's \"discover\" pages and follows the link whose text names the category (e.g. 'Motherboard'), so a renamed category page is still found. 'card' selectors are optional: if they find nothing, a generic product-card finder is used. Run `python scraper/crawl.py --check` after editing to see how many products each category page gives.",
  "shops": [
   {
    "name": "Star Tech",
    "base": "https://www.startech.com.bd",
-   "card": {"item": ".p-item", "name": ".p-item-name a", "price": ".p-item-price"},
+   "card": {
+    "item": ".p-item",
+    "name": ".p-item-name a",
+    "price": ".p-item-price"
+   },
    "categories": {
     "cpu": "/component/processor",
     "cooler": "/component/CPU-Cooler",
@@ -14,7 +18,10 @@
     "gpu": "/component/graphics-card",
     "psu": "/component/power-supply",
     "case": "/component/casing"
-   }
+   },
+   "discover": [
+    "/component"
+   ]
   },
   {
    "name": "Ryans",
@@ -28,7 +35,10 @@
     "gpu": "/category/desktop-component-graphics-card",
     "psu": "/category/desktop-component-power-supply",
     "case": "/category/desktop-component-casing"
-   }
+   },
+   "discover": [
+    "/"
+   ]
   },
   {
    "name": "Tech Land",
@@ -42,6 +52,136 @@
     "gpu": "/pc-components/graphics-card",
     "psu": "/pc-components/power-supply",
     "case": "/pc-components/computer-case"
+   },
+   "discover": [
+    "/pc-components"
+   ]
+  },
+  {
+   "name": "PCB Store",
+   "base": "https://pcbstore.com.bd",
+   "discover": [
+    "/pc-components"
+   ],
+   "categories": {
+    "cpu": "/pc-components/processor",
+    "cooler": "/pc-components/cpu-cooler",
+    "board": "/pc-components/motherboard",
+    "ram": "/pc-components/desktop-ram",
+    "ssd": "/pc-components/ssd",
+    "gpu": "/pc-components/graphics-card",
+    "psu": "/pc-components/power-supply",
+    "case": "/pc-components/casing"
+   }
+  },
+  {
+   "name": "Sumash Tech",
+   "base": "https://www.sumashtech.com",
+   "discover": [
+    "/category/desktop-components",
+    "/pc-builder"
+   ],
+   "categories": {
+    "cpu": "/category/components-processor",
+    "cooler": [
+     "/category/components-cpu-cooler",
+     "/category/cpu-cooler"
+    ],
+    "board": [
+     "/category/components-motherboard",
+     "/category/motherboard"
+    ],
+    "ram": [
+     "/category/components-ram",
+     "/category/ram"
+    ],
+    "ssd": [
+     "/category/components-ssd",
+     "/category/ssd"
+    ],
+    "gpu": [
+     "/category/components-graphics-card",
+     "/category/graphics-card"
+    ],
+    "psu": [
+     "/category/components-power-supply",
+     "/category/power-supply"
+    ],
+    "case": [
+     "/category/components-casing",
+     "/category/casing"
+    ]
+   }
+  },
+  {
+   "name": "Creatus Computer",
+   "base": "https://www.creatus.com.bd",
+   "discover": [
+    "/"
+   ],
+   "categories": {
+    "cpu": "/processor",
+    "cooler": [
+     "/cpu-cooler",
+     "/cooler"
+    ],
+    "board": "/motherboard",
+    "ram": [
+     "/desktop-ram",
+     "/ram"
+    ],
+    "ssd": [
+     "/ssd",
+     "/solid-state-drive"
+    ],
+    "gpu": "/graphics-card",
+    "psu": [
+     "/power-supply",
+     "/psu"
+    ],
+    "case": [
+     "/casing",
+     "/case"
+    ]
+   }
+  },
+  {
+   "name": "Computer Mania BD",
+   "base": "https://computermania.com.bd",
+   "paging": "path",
+   "discover": [
+    "/product-category/desktop-components/"
+   ],
+   "categories": {
+    "cpu": [
+     "/product-category/desktop-components/processor/",
+     "/product-category/desktop-components/processors/"
+    ],
+    "cooler": [
+     "/product-category/desktop-components/cpu-cooler/",
+     "/product-category/desktop-components/cooler/"
+    ],
+    "board": "/product-category/desktop-components/motherboard/",
+    "ram": [
+     "/product-category/desktop-components/ram/",
+     "/product-category/desktop-components/desktop-ram/"
+    ],
+    "ssd": [
+     "/product-category/desktop-components/ssd/",
+     "/product-category/desktop-components/storage/"
+    ],
+    "gpu": [
+     "/product-category/desktop-components/graphics-card/",
+     "/product-category/desktop-components/graphics-cards/"
+    ],
+    "psu": [
+     "/product-category/desktop-components/power-supply/",
+     "/product-category/desktop-components/psu/"
+    ],
+    "case": [
+     "/product-category/desktop-components/casing/",
+     "/product-category/desktop-components/case/"
+    ]
    }
   }
  ]
