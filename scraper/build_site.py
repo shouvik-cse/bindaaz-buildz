@@ -383,9 +383,9 @@ def main():
                            lambda m: f'{m.group(1)}="{BASE}/{m.group(2)}"', page_html)
         r = pre.get((use, b))
         if r and r["ok"]:  # static preview of the build, replaced by the live builder once the page's script runs
-            rows = "".join(f'<li class="row">{img_tag(pt["img"], "th")}<div class="info"><span class="cat">{E(pt["lab"])}</span><div class="nm">{E(pt["n"])}</div><div class="sp">{E(pt["sp"])}</div></div>'
-                           f'<div class="side"><span class="pr">{tk(pt["p"]) if pt["p"] else "Included"}</span>'
-                           + (f'<a class="buy" href="{E(buy(pt["url"], pt["shop"]))}" target="_blank" rel="{rel_attr(pt["shop"])}">Buy at {E(pt["shop"])}</a>' if pt["url"] else "") + "</div></li>" for pt in r["parts"])
+            rows = "".join(f'<li class="row">{img_tag(pt.get("img"), "th")}<div class="info"><span class="cat">{E(pt["lab"])}</span><div class="nm">{E(pt["n"])}</div><div class="sp">{E(pt.get("sp") or "")}</div></div>'
+                           f'<div class="side"><span class="pr">{tk(pt["p"]) if pt.get("p") else "Included"}</span>'
+                           + (f'<a class="buy" href="{E(buy(pt["url"], pt["shop"]))}" target="_blank" rel="{rel_attr(pt["shop"])}">Buy at {E(pt["shop"])}</a>' if pt.get("url") else "") + "</div></li>" for pt in r["parts"])
             snap = f'<div class="total"><div><div class="sub">Build total</div><div class="big">{tk(r["total"])}</div></div><div class="tags"><span class="tag">{E(r["tier"])}</span></div></div><ul class="rows">{rows}</ul>'
             page_html = page_html.replace('<div class="card sheet" id="sheet" aria-live="polite"></div>', f'<div class="card sheet" id="sheet" aria-live="polite">{snap}</div>', 1)
         (DIST / "builds" / slug).mkdir(parents=True, exist_ok=True)
@@ -393,7 +393,7 @@ def main():
         urls.append(url)
         if r and r["ok"]:
             pk = {pt["k"]: pt for pt in r["parts"]}
-            col = "".join(img_tag(pk[k]["img"], "") if pk[k]["img"] else "<span></span>" for k in ("case", "gpu", "cpu", "board"))
+            col = "".join(img_tag(pk[k].get("img"), "") if pk[k].get("img") else "<span></span>" for k in ("case", "gpu", "cpu", "board"))
             main_parts = " + ".join(E(pk[k]["n"]) for k in ("gpu", "cpu") if pk[k]["n"] != "No graphics card")
             build_cards[use].append(f'<a class="bcard" href="{url}"><div class="collage">{col}</div><span>{en} under {words} taka</span><span class="tot">{tk(r["total"])}</span><small>{main_parts}</small></a>')
         else:

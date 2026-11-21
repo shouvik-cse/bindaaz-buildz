@@ -18,7 +18,7 @@ for (const { use, budget } of JSON.parse(spec)) {
     use, budget, ok: true, total: BB.total(r.x), tier: BB.tier(r.x),
     parts: BB.SLOTS.map(k => {
       const o = r.x[k], L = BB.listing(o);
-      return { k, lab: BB.LAB[k], n: o.n, sp: o.sp, p: BB.pr(o), url: L && L.url, shop: L && L.shop, img: L && L.img, stock: L ? L.stock : true };
+      return { k, lab: BB.LAB[k], n: o.n, sp: o.sp || "", p: BB.pr(o) || 0, url: (L && L.url) || null, shop: (L && L.shop) || null, img: (L && L.img) || null, stock: L ? L.stock !== false : true };
     }),
   });
 }

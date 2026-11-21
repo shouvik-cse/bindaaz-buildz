@@ -9,7 +9,7 @@ site/                    the website source
   engine.js              parts table + build logic (used by the page AND by build_site.py)
   logo.webp, og-image.jpg, favicons
   catalog.json           written by the crawler, don't edit by hand
-functions/img.js         Cloudflare function: serves product photos for the "Build image" picture
+worker.js, wrangler.jsonc  Cloudflare Worker: publishes dist/ and serves product photos for the "Build image" picture
 scraper/
   crawl.py               crawls all category pages of every shop (name, price, stock, link, photo)
   classify.py            turns product names into builder parts (socket, chipset, DDR type, GB, watts, ...)
@@ -36,24 +36,21 @@ scraper/
 
 ## Set it up on Cloudflare Pages (about 15 minutes)
 
-1. **Put the code on GitHub.** Create a GitHub repository called `bindaaz-buildz` (public or private) and upload this folder, including the hidden `.github` folder. Or with git:
-   ```bash
-   git init && git add . && git commit -m "First version"
-   git branch -M main
-   git remote add origin https://github.com/YOUR-NAME/bindaaz-buildz.git
-   git push -u origin main
-   ```
-2. **Create a Cloudflare account and project.**
-   - Make a free account at dash.cloudflare.com.
-   - Go to **Workers & Pages → Create → Pages → Upload assets (Direct Upload)**.
-   - Name the project **bindaaz-buildz**, upload any small file to create it, and finish. Your address will be `https://bindaaz-buildz.pages.dev`.
-3. **Make an API token.** Go to **My Profile → API Tokens → Create Token**, use the **Edit Cloudflare Workers** template (or a custom token with *Account → Cloudflare Pages → Edit*), and copy the token. Your **Account ID** is on the right side of the Workers & Pages overview page.
-4. **Give GitHub the secrets.** In the repository, open **Settings → Secrets and variables → Actions → New repository secret** and add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
-5. **Allow the bot to commit.** Go to **Settings → Actions → General → Workflow permissions** and choose **Read and write permissions**.
-6. **Check `site_config.json`.** `base_url` is already `https://bindaaz-buildz.pages.dev`. Change it when you add your own domain.
-7. **Run it.** On the **Actions** tab, open **Update products and deploy to Cloudflare** and click **Run workflow**. The first crawl takes roughly 20–40 minutes. After that it runs every 6 hours by itself, and every push redeploys.
+GitHub collects the prices every 6 hours and saves them in the repository. Cloudflare is connected to the repository, so every update makes Cloudflare rebuild and publish the site. No API tokens are needed.
 
-Cloudflare Pages has no bandwidth limit on the free plan. The photo function (`/img`) is only called when someone presses "Build image". It counts towards the free 100,000 function requests a day, and photos are cached for a week.
+1. **Put the code on GitHub** in a repository called `bindaaz-buildz`, including the hidden `.github` folder.
+2. **Allow the bot to save prices:** in the repository, go to **Settings → Actions → General → Workflow permissions**, choose **Read and write permissions**, and click **Save**.
+3. **Connect Cloudflare to the repository:**
+   - In Cloudflare, go to **Workers & Pages → Create → Pages → Connect to Git**.
+   - Authorise GitHub and pick the `bindaaz-buildz` repository.
+4. **Build settings:**
+   - Framework preset: **None**
+   - Build command: `pip install -r scraper/requirements.txt && python scraper/build_site.py`
+   - Build output directory: `dist`
+   - Environment variable: `PYTHON_VERSION` = `3.12`
+   Click **Save and Deploy**. `wrangler.jsonc` tells Cloudflare to publish the `dist` folder and run `worker.js` for product photos.
+5. **Set your address:** put the `https://….pages.dev` address Cloudflare shows in `base_url` in `site_config.json` and commit. Cloudflare rebuilds by itself.
+6. **Collect the products:** go to **Actions → Update products → Run workflow**. The first crawl takes about 20–40 minutes. When it saves `catalog.json`, Cloudflare publishes the site with all products a minute or two later.
 
 ## Quick try without GitHub (upload by hand)
 
@@ -84,7 +81,7 @@ Every "Buy at …" button, product card, price-guide row and copied build list g
 - When a template is set, that shop's links are automatically marked `rel="sponsored"`, as Google requires for paid links.
 - **Do this before you agree a deal:** add plain `utm_source=bindaazbuildz` tracking to every shop. Shops can then see in their own analytics how many visitors and sales you send them, which gives you something concrete to show when you ask for a commission.
 
-**Product photos** are shown straight from the shops' websites (nothing is copied to your site). They belong to the shops and brands, which is normal for a site that sends them buyers. If a shop asks you to stop showing its photos, remove its domain from `ALLOWED` in `functions/img.js` and its images will fall back to labelled placeholders.
+**Product photos** are shown straight from the shops' websites (nothing is copied to your site). They belong to the shops and brands, which is normal for a site that sends them buyers. If a shop asks you to stop showing its photos, remove its domain from `ALLOWED` in `worker.js` and its images will fall back to labelled placeholders.
 
 ## Check the shop category pages first (do this once)
 
@@ -141,7 +138,7 @@ The crawler matches shop listings by the last word of the name (`9600X3D`), so n
 ## When something breaks
 
 - **A category suddenly has 0 products:** the shop changed its URL or layout. Run `--check` and `--test` as above.
-- **The deploy step fails with "Project not found":** create the Cloudflare Pages project first (setup step 2) with exactly the name `bindaaz-buildz`.
+- **The site didn't update after a crawl:** in Cloudflare, open the project → **Deployments** and check that the latest build succeeded. Open its build log if it failed.
 - **Every request from GitHub gets HTTP 403:** some shops block cloud servers. Run the crawler on your own PC with Windows Task Scheduler (or cron) every few hours, then push:
   ```bash
   python scraper/crawl.py && git add site/catalog.json && git commit -m "Update product catalogue [prices]" && git push
