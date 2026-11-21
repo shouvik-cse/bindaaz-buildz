@@ -28,18 +28,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SITE, DIST = ROOT / "site", ROOT / "dist"
 CFG = json.loads((ROOT / "site_config.json").read_text(encoding="utf-8"))
-BASE = (os.environ.get("SITE_BASE_URL") or CFG["base_url"]).rstrip("/")  # SITE_BASE_URL=http://localhost:8000 for a local preview
+def clean_base(u):
+    """Tidy the site address from site_config.json: trims spaces, fixes a doubled
+    'https://https://', adds https:// if missing, drops a trailing slash."""
+    import re as _re
+    u = (u or "").strip().strip('"').strip()
+    u = _re.sub(r"^(?:https?:/*)+", "", u, flags=_re.I)
+    return "https://" + u.rstrip("/") if not u.startswith(("localhost", "127.0.0.1")) else "http://" + u.rstrip("/")
+
+
+BASE = clean_base(os.environ.get("SITE_BASE_URL") or CFG["base_url"])  # SITE_BASE_URL=http://localhost:8000 for a local preview
 E = html.escape
 
 CATS = {  # builder key: (url slug, English name, Bengali name)
     "cpu": ("processor", "Processor", "প্রসেসর"),
-    "gpu": ("graphics-card", "Graphics card", "গ্রাফিক্স কার্ড"),
+    "gpu": ("graphics-card", "Graphics Card", "গ্রাফিক্স কার্ড"),
     "board": ("motherboard", "Motherboard", "মাদারবোর্ড"),
     "ram": ("ram", "Desktop RAM", "র‍্যাম"),
     "ssd": ("ssd", "SSD", "এসএসডি"),
-    "psu": ("power-supply", "Power supply", "পাওয়ার সাপ্লাই"),
-    "case": ("casing", "PC casing", "কেসিং"),
-    "cooler": ("cpu-cooler", "CPU cooler", "সিপিইউ কুলার"),
+    "psu": ("power-supply", "Power Supply", "পাওয়ার সাপ্লাই"),
+    "case": ("casing", "PC Casing", "কেসিং"),
+    "cooler": ("cpu-cooler", "CPU Cooler", "সিপিইউ কুলার"),
 }
 BUILDS = [  # (use, budget)
     *[("gaming", b) for b in (60000, 70000, 80000, 90000, 100000, 120000, 150000, 180000, 200000, 250000, 300000, 400000)],
@@ -159,7 +168,7 @@ nav .l a{display:inline-flex;align-items:center;min-height:44px}
 
 def page(path, title, desc, body, crumbs=(), ld=None, updated=None):
     """Write a generated page to dist/<path>/index.html."""
-    url = f"{BASE}/{path}" if path else f"{BASE}/"
+    url = f"{BASE}/{path}/" if path else f"{BASE}/"
     trail = [("Home", f"{BASE}/"), *crumbs]
     bc = {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": n, "item": u} for i, (n, u) in enumerate(trail)]}
     graph = [bc] + (ld or [])
@@ -176,7 +185,7 @@ def page(path, title, desc, body, crumbs=(), ld=None, updated=None):
 {head_extra()}
 <style>{CSS}</style></head><body>
 <nav><div class="wrap"><a class="brand" href="{BASE}/"><span class="bn">বিন্দাজ</span> <i>Buildz</i></a>
-<div class="l"><a href="{BASE}/#builder">Smart Build</a><a href="{BASE}/price/">Price guides</a><a href="{BASE}/builds/">Ready builds</a><a href="{BASE}/about/">About</a></div></div></nav>
+<div class="l"><a href="{BASE}/#builder">Smart Build</a><a href="{BASE}/price/">Price Guides</a><a href="{BASE}/builds/">Ready Builds</a><a href="{BASE}/about/">About</a></div></div></nav>
 <main><div class="wrap"><div class="crumbs">{crumb_html}</div>
 {body}
 </div></main>
@@ -274,14 +283,14 @@ def main():
             rel = sorted(rel, key=lambda x: abs(x["p"] - m["p"]))[:6]
             rel_html = "".join(f'<a href="{BASE}/price/{model_slug(x["n"])}/">{E(short_name(x["n"]))} price</a>' for x in rel)
             pic = next((i.get("i") for i in ([best] if best else []) + L if i and i.get("i")), None)
-            body = f"""{img_tag(pic, "hero-img", short) if pic else ""}<h1>{E(short)} price in Bangladesh</h1>
+            body = f"""{img_tag(pic, "hero-img", short) if pic else ""}<h1>{E(short)} Price in Bangladesh</h1>
 <p class="bn lead">বাংলাদেশে {E(short)} এর দাম · {month}</p>
 <p class="lead">{summ}</p>
 <div class="stat"><div><b>{tk(best['p']) if best else '—'}</b><span>Lowest price{' (in stock)' if best and best['st'] else ''}</span></div><div><b>{len(L)}</b><span>Listings</span></div><div><b>{len(shops)}</b><span>Shops</span></div></div>
 <p class="note">{spec}. Prices checked {upd_h}.</p>
 <p><a class="btn" href="{BASE}/?{q}={m['id']}&budget={sugg}#builder">Build a PC with the {E(short)}</a></p>
-<h2>All {E(short)} listings</h2>{listing_table(L)}
-{f'<h2>Compare similar models</h2><div class="grid">{rel_html}</div>' if rel_html else ''}"""
+<h2>All {E(short)} Listings</h2>{listing_table(L)}
+{f'<h2>Compare Similar Models</h2><div class="grid">{rel_html}</div>' if rel_html else ''}"""
             urls.append(page(f"price/{slug}", f"{short} Price in Bangladesh ({month}) – Star Tech, Ryans, Tech Land",
                              f"{short} price in BD today: " + (f"from {tk(best['p'])} at {best['s']}. " if best else "") + f"Compare {len(L)} listings from {', '.join(shops)}. {m['sp']}.",
                              body, [("Price guides", f"{BASE}/price/"), (f"{CATS[cat][1]} prices", f"{BASE}/price/{CATS[cat][0]}/"), (short, url)],
@@ -308,7 +317,7 @@ def main():
                 b = min(ps, key=lambda i: i["p"]) if ps else None
                 short = short_name(m["n"])
                 rows.append((b["p"] if b else 9e9, f'<tr><td><a href="{model_url[m["id"]]}">{E(short)}</a></td><td>{E(m["sp"])}</td><td>{E(b["s"]) if b else "—"}</td><td class="n">{tk(b["p"]) if b else "Out of stock"}</td></tr>'))
-            summary = f'<h2>{cname} models, lowest price</h2><div class="scroll"><table class="stack"><thead><tr><th>Model</th><th>Specs</th><th>Cheapest at</th><th class="n">From</th></tr></thead><tbody>{"".join(r for _, r in sorted(rows))}</tbody></table></div>'
+            summary = f'<h2>{cname} Models, Lowest Price</h2><div class="scroll"><table class="stack"><thead><tr><th>Model</th><th>Specs</th><th>Cheapest At</th><th class="n">From</th></tr></thead><tbody>{"".join(r for _, r in sorted(rows))}</tbody></table></div>'
         else:
             groups = defaultdict(list)
             for i in L:
@@ -321,13 +330,13 @@ def main():
                     continue
                 b = min(ps, key=lambda i: i["p"])
                 rows.append((b["p"], f'<tr><td>{E(g)}</td><td><a href="{E(buy(b["u"], b["s"]))}" rel="{rel_attr(b["s"])}" target="_blank">{E(b["n"])}</a></td><td>{E(b["s"])}</td><td class="n">{tk(b["p"])}</td></tr>'))
-            summary = f'<h2>Cheapest {cname.lower()} by type</h2><div class="scroll"><table class="stack"><thead><tr><th>Type</th><th>Cheapest product</th><th>Shop</th><th class="n">Price</th></tr></thead><tbody>{"".join(r for _, r in sorted(rows))}</tbody></table></div>' if rows else ""
-        body = f"""<h1>{cname} price in Bangladesh</h1>
+            summary = f'<h2>Cheapest {cname} by Type</h2><div class="scroll"><table class="stack"><thead><tr><th>Type</th><th>Cheapest Product</th><th>Shop</th><th class="n">Price</th></tr></thead><tbody>{"".join(r for _, r in sorted(rows))}</tbody></table></div>' if rows else ""
+        body = f"""<h1>{cname} Price in Bangladesh</h1>
 <p class="bn lead">বাংলাদেশে {bn} এর দাম · {month}</p>
 <p class="lead">{len(L):,} {cname.lower()} listings from {', '.join(sorted({i['s'] for i in L}))}, {len(instock):,} in stock{f', from {tk(lo)} to {tk(hi)}' if lo else ''}. Checked {upd_h}.</p>
-<p><a class="btn" href="{BASE}/#builder">Build a full PC with these prices</a></p>
+<p><a class="btn" href="{BASE}/#builder">Build a Full PC with These Prices</a></p>
 {summary}
-<h2>Every {cname.lower()} listed</h2>{listing_table(L)}"""
+<h2>Every {cname} Listed</h2>{listing_table(L)}"""
         urls.append(page(f"price/{cslug}", f"{cname} Price in Bangladesh ({month}) – Compare {len(L):,} Listings",
                          f"{cname} price list in BD: {len(L):,} products from Star Tech, Ryans and Tech Land" + (f", in stock from {tk(lo)}" if lo else "") + ". Updated " + upd_h + ".",
                          body, [("Price guides", f"{BASE}/price/"), (f"{cname} prices", url)], None, upd_h))
@@ -338,9 +347,9 @@ def main():
     if cat_cards:
         urls.append(page("price", f"PC Component Price List in Bangladesh ({month})",
                          "Compare today's prices for processors, graphics cards, motherboards, RAM, SSDs, power supplies, casings and coolers from Star Tech, Ryans and Tech Land.",
-                         f"""<h1>PC component prices in Bangladesh</h1><p class="bn lead">কম্পিউটার পার্টসের দাম · {month}</p>
+                         f"""<h1>PC Component Prices in Bangladesh</h1><p class="bn lead">কম্পিউটার পার্টসের দাম · {month}</p>
 <p class="lead">{len(items):,} products from {', '.join(catalog.get('shops', []))}, checked {upd_h}.</p>
-<div class="cards">{''.join(cat_cards)}</div><h2>Processor and graphics card models</h2><div class="grid">{model_links}</div>""",
+<div class="cards">{''.join(cat_cards)}</div><h2>Processor and Graphics Card Models</h2><div class="grid">{model_links}</div>""",
                          [("Price guides", f"{BASE}/price/")], None, upd_h))
 
     # ---- ready builds: copies of the builder, pre-set
@@ -375,7 +384,7 @@ def main():
         page_html = page_html.replace('<link rel="canonical" href="__BASE__/">', f'<link rel="canonical" href="{url}">')
         page_html = page_html.replace('<meta property="og:url" content="__BASE__/">', f'<meta property="og:url" content="{url}">')
         page_html = re.sub(r'<meta property="og:title" content="[^"]*">', f'<meta property="og:title" content="{E(title)}">', page_html, count=1)
-        page_html = re.sub(r'<h1 id="h1">.*?</h1>', f'<h1 id="h1">{E(en)} under <em>{tk(b)}</em></h1>', page_html, count=1, flags=re.S)
+        page_html = re.sub(r'<h1 id="h1">.*?</h1>', f'<h1 id="h1">{E(en)} Under <em>{tk(b)}</em></h1>', page_html, count=1, flags=re.S)
         page_html = re.sub(r'<p id="intro">.*?</p>', f'<p id="intro">{E(intro)}</p><p class="bn note">{tk(b)} বাজেটে {bn} বিল্ড</p>', page_html, count=1, flags=re.S)
         page_html = page_html.replace("<!--HEAD-EXTRA-->", f'<script>window.PRESET={{"budget":{b},"use":"{use}"}};window.ROOT="{BASE}/"</script><!--HEAD-EXTRA-->')
         # this copy lives two folders down, so its own files (engine.js, logo, icons) must point at the site root
@@ -401,9 +410,9 @@ def main():
 
     urls.append(page("builds", f"Ready PC Builds by Budget in Bangladesh ({month})",
                      "Gaming, editing and office PC builds for every budget from ৳45,000 to ৳4 lakh, with today's prices from Star Tech, Ryans and Tech Land.",
-                     "<h1>Ready PC builds by budget</h1><p class=\"bn lead\">বাজেট অনুযায়ী পিসি বিল্ড</p>"
+                     "<h1>Ready PC Builds by Budget</h1><p class=\"bn lead\">বাজেট অনুযায়ী পিসি বিল্ড</p>"
                      "<p class=\"lead\">Each build is made fresh from parts in stock today and keeps every part compatible. Open one to see the parts and swap anything you like.</p>"
-                     + "".join(f"<h2>{USE[u][0]} builds</h2><div class=\"cards\">{''.join(c)}</div>" for u, c in build_cards.items()),
+                     + "".join(f"<h2>{USE[u][0]} Builds</h2><div class=\"cards\">{''.join(c)}</div>" for u, c in build_cards.items()),
                      [("Ready builds", f"{BASE}/builds/")], None, upd_h))
 
     # ---- about
@@ -413,15 +422,15 @@ def main():
                      "বিন্দাজ Buildz is an independent PC-builder and price-comparison site for Bangladesh. How we collect prices, how builds are chosen, and our disclaimer.",
                      f"""<h1>About বিন্দাজ Buildz</h1>
 <p class="lead">বিন্দাজ Buildz helps people in Bangladesh plan a desktop PC: pick a budget, get a complete and compatible build, and see where each part is cheapest today.</p>
-<h2>Where prices come from</h2><p>A program reads the public category pages of Star Tech, Ryans and Tech Land several times a day and records each product's name, price, stock status and link. We are not affiliated with any of these shops and don't sell anything ourselves. Every product links to the shop's own page.</p>
-<h2>How builds are chosen</h2><p>The builder tries every processor and graphics card that fits your budget and choices. It scores each pairing for gaming, editing or office use and avoids lopsided pairs. It then adds a motherboard of the right class for the processor, and RAM, storage, power supply, case and cooler that are compatible and in stock. It checks socket, memory type, wattage, cooling and case size.</p>
+<h2>Where Prices Come From</h2><p>A program reads the public category pages of Star Tech, Ryans and Tech Land several times a day and records each product's name, price, stock status and link. We are not affiliated with any of these shops and don't sell anything ourselves. Every product links to the shop's own page.</p>
+<h2>How Builds Are Chosen</h2><p>The builder tries every processor and graphics card that fits your budget and choices. It scores each pairing for gaming, editing or office use and avoids lopsided pairs. It then adds a motherboard of the right class for the processor, and RAM, storage, power supply, case and cooler that are compatible and in stock. It checks socket, memory type, wattage, cooling and case size.</p>
 <h2>Disclaimer</h2><p>Prices and stock change quickly and may differ in the shop, online or with bundle offers. Always confirm the final price, stock and warranty with the shop before you pay. Performance descriptions are general guidance, not guarantees.</p>
 <h2>Privacy</h2><p>The site has no accounts. Your budget and choices are remembered only in your own browser.{' We use Google Analytics to count visits.' if CFG.get('ga4_measurement_id') else ''}</p>
 <h2>Contact</h2><p>{contact}{fb or ''}{'' if contact or fb else 'Shop owners and visitors can reach us through our social pages.'}</p>""",
                      [("About", f"{BASE}/about/")], None, upd_h))
 
     # ---- fill the main page: SEO links hub + extra head tags
-    links = ("<h2>Price guides and ready builds</h2><div class=\"linkgrid\">"
+    links = ("<h2>Price Guides and Ready Builds</h2><div class=\"linkgrid\">"
              + "".join(f'<a href="{BASE}/price/{s}/">{n} price in BD</a>' for k, (s, n, _) in CATS.items() if by_cat.get(k))
              + "".join(f'<a href="{BASE}/builds/{slugify(USE[u][0])}-under-{budget_words(b)[1]}-taka/">{USE[u][0]} under {tk(b)}</a>' for u, b in BUILDS if u == "gaming")
              + "".join(f'<a href="{model_url[m["id"]]}">{E(short_name(m["n"]))} price</a>' for m in G if m["id"] in model_url)
@@ -435,9 +444,12 @@ def main():
 
     # ---- 404, robots, sitemap, manifest
     page("404-tmp", "Page not found – বিন্দাজ Buildz", "This page doesn't exist.",
-         f'<h1>Page not found</h1><p class="lead">The page may have moved. Try the <a href="{BASE}/">PC builder</a> or the <a href="{BASE}/price/">price guides</a>.</p>')
-    (DIST / "404-tmp" / "index.html").rename(DIST / "404.html")
-    (DIST / "404-tmp").rmdir()
+         f'<h1>Page Not Found</h1><p class="lead">The page may have moved. Try the <a href="{BASE}/">PC builder</a> or the <a href="{BASE}/price/">price guides</a>.</p>')
+    nf = (DIST / "404-tmp" / "index.html").read_text(encoding="utf-8")
+    nf = re.sub(r'<link rel="canonical"[^>]*>', "", nf)              # an error page has no address of its own
+    nf = nf.replace(f"{BASE}/404-tmp/", f"{BASE}/").replace('<meta name="viewport"', '<meta name="robots" content="noindex"><meta name="viewport"', 1)
+    (DIST / "404.html").write_text(nf, encoding="utf-8")
+    shutil.rmtree(DIST / "404-tmp")
     (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {BASE}/sitemap.xml\n", encoding="utf-8")
     sm = "".join(f"<url><loc>{E(u)}</loc><lastmod>{lastmod}</lastmod></url>" for u in dict.fromkeys(urls))
     (DIST / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{sm}</urlset>\n', encoding="utf-8")

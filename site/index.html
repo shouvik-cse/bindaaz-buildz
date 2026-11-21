@@ -107,7 +107,7 @@ select:focus,input:focus,button:focus-visible{outline:2px solid var(--vio);outli
 .pcard{display:grid;gap:4px;align-content:start;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;color:var(--ink)}.pcard:hover{border-color:var(--vio)}
 .pimg{width:100%;aspect-ratio:1;margin-bottom:6px}.pc{font:600 12px "Chakra Petch",system-ui,sans-serif;color:var(--vio2)}.pn{font-size:15px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.pp{font:700 20px "Chakra Petch",system-ui,sans-serif}.ps{font-size:13px;color:var(--mute)}
 dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:0;max-width:min(560px,94vw)}dialog::backdrop{background:rgba(5,3,10,.8)}
-.dlg{padding:18px;display:grid;gap:10px}.dlg img{width:100%;aspect-ratio:4/5;border-radius:10px;background:#0b0814;object-fit:contain}.dlgb{display:flex;flex-wrap:wrap;gap:8px}
+.dlg{padding:18px;display:grid;gap:10px}.seg2{grid-template-columns:1fr 1fr}.dlg img{width:100%;aspect-ratio:4/5;border-radius:10px;background:#0b0814;object-fit:contain}.dlgb{display:flex;flex-wrap:wrap;gap:8px}
 section h2{font-size:clamp(28px,3.4vw,40px)}
 .cat-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:20px 0}
 .cat-tabs .chip[aria-pressed=true]{background:var(--vio);border-color:var(--vio);color:#fff}
@@ -177,13 +177,13 @@ input[type=range]{height:44px;touch-action:pan-y}
 <body>
 <nav><div class="wrap">
   <a class="brand" href="#top"><span class="bn">বিন্দাজ</span> <i>Buildz</i></a>
-  <div class="links"><a href="#builder">Smart Build</a><a href="#products">All products</a><!--SEO--><a href="__BASE__/price/">Price guides</a><a href="__BASE__/builds/">Ready builds</a><!--/SEO--><a href="#faq">FAQ</a></div>
+  <div class="links"><a href="#builder">Smart Build</a><a href="#products">All Products</a><!--SEO--><a href="__BASE__/price/">Price Guides</a><a href="__BASE__/builds/">Ready Builds</a><!--/SEO--><a href="#faq">FAQ</a></div>
 </div></nav>
 
 <header class="band" id="top"><div class="wrap hero">
   <img src="logo.webp" fetchpriority="high" decoding="async" alt="বিন্দাজ Buildz logo: silver lettering beside a glowing violet PC case" width="780" height="408">
   <div>
-    <h1 id="h1">Set your budget. Get a <em>complete PC</em>, part by part.</h1>
+    <h1 id="h1">Set Your Budget. Get a <em>Complete PC</em>, Part by Part.</h1>
     <p id="intro">Pick a taka budget, and if you like, a CPU or graphics card you've set your heart on. বিন্দাজ Buildz fills in the motherboard, RAM, SSD, power supply, case and cooler, checks that everything fits together, and keeps the total inside your budget.</p>
     <p class="note hnote">Monitor, keyboard, mouse and Windows licence are not included.</p>
   </div>
@@ -196,21 +196,21 @@ input[type=range]{height:44px;touch-action:pan-y}
     <div class="budget-row"><span>৳</span><input type="number" id="bud" min="40000" max="600000" step="1000" value="120000" inputmode="numeric"></div>
     <input type="range" id="budr" min="40000" max="600000" step="5000" value="120000" aria-label="Budget slider">
     <div class="chips" id="presets"></div></div>
-    <div class="fg wide"><label class="l">What's it for?</label>
+    <div class="fg wide"><label class="l">What's It For?</label>
     <div class="seg" id="use">
       <button type="button" data-v="gaming" aria-pressed="true">Gaming</button>
       <button type="button" data-v="creator" aria-pressed="false">Editing / 3D</button>
-      <button type="button" data-v="office" aria-pressed="false">Study / office</button>
+      <button type="button" data-v="office" aria-pressed="false">Study / Office</button>
     </div></div>
     <div class="fg"><label class="l" for="cpuP">Processor</label><select id="cpuP"></select></div>
-    <div class="fg"><label class="l" for="gpuP">Graphics card</label><select id="gpuP"></select></div>
+    <div class="fg"><label class="l" for="gpuP">Graphics Card</label><select id="gpuP"></select></div>
     <div class="fg two">
       <div><label class="l" for="ramP">Memory</label>
         <select id="ramP"><option value="0">Auto (16 GB)</option><option value="32">32 GB</option><option value="64">64 GB</option></select></div>
       <div><label class="l" for="ssdP">Storage</label>
         <select id="ssdP"><option value="0">Auto (512 GB)</option><option value="1000">1 TB</option><option value="2000">2 TB</option><option value="4000">4 TB</option></select></div>
     </div>
-    <div class="fg"><label class="ck stockck"><input type="checkbox" id="stockOnly" checked> Only use parts in stock</label>
+    <div class="fg"><label class="ck stockck"><input type="checkbox" id="stockOnly" checked> Only Use Parts in Stock</label>
     <p class="note" style="margin:4px 0 0">The build updates as you change anything.</p></div>
   </form>
 
@@ -218,29 +218,29 @@ input[type=range]{height:44px;touch-action:pan-y}
 </div></section>
 
 <section class="band" id="products" style="background:var(--panel)"><div class="wrap">
-  <h2>All products</h2>
+  <h2>All Products</h2>
   <div class="cfilters">
     <input type="search" id="q" placeholder="Search, e.g. RTX 5060 or B650M" aria-label="Search products">
     <select id="ccat" aria-label="Category"></select>
-    <select id="cshop" aria-label="Shop"><option value="">All shops</option></select>
-    <select id="csort" aria-label="Sort"><option value="p">Cheapest first</option><option value="-p">Priciest first</option><option value="n">Name A–Z</option></select>
-    <label class="ck"><input type="checkbox" id="cstock" checked> In stock only</label>
+    <select id="cshop" aria-label="Shop"><option value="">All Shops</option></select>
+    <select id="csort" aria-label="Sort"><option value="p">Cheapest First</option><option value="-p">Priciest First</option><option value="n">Name A–Z</option></select>
+    <label class="ck"><input type="checkbox" id="cstock" checked> In Stock Only</label>
   </div>
   <p class="note" id="cstatus"></p>
   <div class="pgrid" id="cgrid"></div>
-  <p style="margin-top:18px"><button class="btn ghost" type="button" id="cmore" hidden>Show more</button></p>
+  <p style="margin-top:18px"><button class="btn ghost" type="button" id="cmore" hidden>Show More</button></p>
 </div></section>
 <section class="band" id="prices"><div class="wrap">
-  <h2>Price list</h2>
+  <h2>Price List</h2>
   <p class="note" style="max-width:70ch">The parts the builder chooses from, with the price it uses. When the site is hosted with the product crawler, these come straight from the shops; otherwise they are late-2026 estimates. Type in the price you were quoted and every build recalculates. Your edits stay in this browser.</p>
   <p class="note" id="pstatus" style="color:var(--vio2)">Built-in estimate prices.</p>
   <div class="cat-tabs" id="tabs"></div>
   <div class="scroll"><table class="stack" id="ptable"></table></div>
-  <p style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px"><button class="btn ghost" type="button" id="pmore" hidden>Show all</button><button class="btn ghost" type="button" id="resetP">Reset all prices</button></p>
+  <p style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px"><button class="btn ghost" type="button" id="pmore" hidden>Show All</button><button class="btn ghost" type="button" id="resetP">Reset All Prices</button></p>
 </div></section>
 
 <section class="band" id="faq"><div class="wrap" style="max-width:860px">
-  <h2>Questions people ask</h2>
+  <h2>Questions People Ask</h2>
   <details open><summary>How much does a gaming PC cost in Bangladesh right now?</summary><p>A PC that plays esports games at 1080p starts around ৳70,000. A solid 1080p high-settings build with an RTX 5060 or RX 9060 XT costs about ৳90,000–1,10,000, and 1440p gaming with an RTX 5070 or RX 9070 XT starts around ৳1,60,000. RAM and SSD prices are high in 2026, so the builder starts you on 16 GB and 512 GB and lets you add more.</p></details>
   <details><summary>Where do the prices come from?</summary><p>From the product pages of Star Tech, Ryans and Tech Land, read automatically several times a day. Each part shows which shop the price is from, with a link. Always confirm the price and warranty with the shop before buying.</p></details>
   <details><summary>Does the build include a monitor, keyboard or mouse?</summary><p>No. Every build covers the processor, graphics card, motherboard, RAM, SSD, power supply, case and CPU cooler. Monitor, keyboard, mouse and Windows licence are extra.</p></details>
@@ -252,12 +252,12 @@ input[type=range]{height:44px;touch-action:pan-y}
 
 <footer class="band"><div class="wrap">
   <div><span class="brand"><span class="bn">বিন্দাজ</span> <i>Buildz</i></span><p style="margin:6px 0 0">Prices are estimates. Confirm stock and warranty with the shop before you buy.</p></div>
-  <div><a href="#builder">Smart Build</a> · <a href="#products">All products</a> · <a href="#prices">Price list</a><!--SEO--> · <a href="__BASE__/about/">About &amp; disclaimer</a><!--/SEO--></div>
+  <div><a href="#builder">Smart Build</a> · <a href="#products">All Products</a> · <a href="#prices">Price List</a><!--SEO--> · <a href="__BASE__/about/">About &amp; Disclaimer</a><!--/SEO--></div>
 </div></footer>
 <div class="toast" id="toast"></div>
-<div class="mbar" id="mbar" hidden><div><span class="sub">Build total</span><b id="mtot">—</b></div><button class="btn" type="button" id="mgo">See parts</button></div>
-<dialog id="imgdlg" aria-label="Build image"><div class="dlg"><img id="imgprev" alt="Image of your complete PC build"><p class="note" id="imgstat"></p>
-<div class="dlgb"><button class="btn" type="button" id="imgsave">Download image</button><button class="btn ghost" type="button" id="imgshare">Share</button><button class="btn ghost" type="button" id="imgclose">Close</button></div></div></dialog>
+<div class="mbar" id="mbar" hidden><div><span class="sub">Build Total</span><b id="mtot">—</b></div><button class="btn" type="button" id="mgo">See Parts</button></div>
+<dialog id="imgdlg" aria-label="Build image"><div class="dlg"><div class="seg seg2" id="imgtabs"><button type="button" data-m="real" aria-pressed="true">Real-Life Photo</button><button type="button" data-m="card" aria-pressed="false">Parts Card</button></div><img id="imgprev" alt="Picture of your complete PC build"><p class="note" id="imgstat"></p>
+<div class="dlgb"><button class="btn" type="button" id="imgsave">Download Image</button><button class="btn ghost" type="button" id="imgshare">Share</button><button class="btn ghost" type="button" id="imgclose">Close</button></div></div></dialog>
 
 <script src="engine.js"></script>
 <script>
@@ -282,43 +282,44 @@ document.addEventListener('error',e=>{const t=e.target;if(t.tagName==='IMG'&&t.d
 const PRE=[60000,90000,125000,175000,250000,400000];
 $('presets').innerHTML=PRE.map(v=>`<button type="button" class="chip" data-v="${v}">${tk(v)}</button>`).join('');
 const og=(lbl,a)=>`<optgroup label="${lbl}">${a.map(o=>`<option value="${o.id}">${esc(o.n)}</option>`).join('')}</optgroup>`;
-$('cpuP').innerHTML='<option value="any">Auto: best for my budget</option><option value="amd">Any AMD Ryzen</option><option value="intel">Any Intel Core</option>'+og('AMD',C.filter(c=>c.b==='amd'))+og('Intel',C.filter(c=>c.b==='intel'));
-$('gpuP').innerHTML='<option value="any">Auto: best for my budget</option><option value="nvidia">Any NVIDIA GeForce</option><option value="amd">Any AMD Radeon</option><option value="none">No card, use CPU graphics</option>'+og('NVIDIA',G.filter(g=>g.b==='nvidia'))+og('AMD',G.filter(g=>g.b==='amd'))+og('Intel',G.filter(g=>g.b==='intel'));
+$('cpuP').innerHTML='<option value="any">Auto: Best for My Budget</option><option value="amd">Any AMD Ryzen</option><option value="intel">Any Intel Core</option>'+og('AMD',C.filter(c=>c.b==='amd'))+og('Intel',C.filter(c=>c.b==='intel'));
+$('gpuP').innerHTML='<option value="any">Auto: Best for My Budget</option><option value="nvidia">Any NVIDIA GeForce</option><option value="amd">Any AMD Radeon</option><option value="none">No Card, Use CPU Graphics</option>'+og('NVIDIA',G.filter(g=>g.b==='nvidia'))+og('AMD',G.filter(g=>g.b==='amd'))+og('Intel',G.filter(g=>g.b==='intel'));
 let use='gaming',cur=null,note='';
 function sync(){Object.assign(BB.opt,{stockOnly:$('stockOnly').checked,ram:+$('ramP').value,ssd:+$('ssdP').value,cpu:$('cpuP').value,gpu:$('gpuP').value})}
 function partRow(k,x){const o=x[k],L=BB.listing(o),op=BB.options(k,x).sort((a,b)=>(b===o)-(a===o));
  const shopLine=BB.OV[o.id]!=null?'Your price':L?`${L.price?'':'Estimated price · '}${L.stock?'':'<b class="oos">out of stock</b> · '}${o.live?'':'<span class="ln">cheapest: '+esc(L.name)+' · </span>'}${esc(L.shop)}`:(BB.META&&!['none','stock'].includes(o.id)?'Estimated price, not listed by any shop':'');
  return`<li class="row">${thumb(L&&L.img,k)}<div class="info"><span class="cat">${LAB[k]}</span><div class="nm">${esc(o.n)}</div><div class="sp">${esc(o.sp)}</div>${shopLine?`<div class="sp">${shopLine}</div>`:''}</div>
   <div class="side"><span class="pr">${pr(o)?tk(pr(o)):'Included'}</span>${L?`<a class="buy" href="${esc(BB.buy(L.url,L.shop))}" target="_blank" rel="${rel(L.shop)}">Buy at ${esc(L.shop)}</a>`:''}</div>
-  ${op.length>1?`<select data-slot="${k}" aria-label="Swap ${LAB[k]}">${op.map(a=>`<option value="${a.id}"${a===o?' selected':''}>${a===o?'Swap '+LAB[k].toLowerCase()+'…':esc(a.n)+' · '+(pr(a)-pr(o)>=0?'+':'−')+tk(Math.abs(pr(a)-pr(o)))+(inStock(a)?'':' · out of stock')}</option>`).join('')}</select>`:''}</li>`}
-function render(){sync();const budget=+$('bud').value||0,sh=$('sheet');
+  ${op.length>1?`<select data-slot="${k}" aria-label="Swap ${LAB[k]}">${op.map(a=>`<option value="${a.id}"${a===o?' selected':''}>${a===o?'Swap '+LAB[k]+'…':esc(a.n)+' · '+(pr(a)-pr(o)>=0?'+':'−')+tk(Math.abs(pr(a)-pr(o)))+(inStock(a)?'':' · out of stock')}</option>`).join('')}</select>`:''}</li>`}
+function render(){sync();const budget=+$('bud').value||0,sh=$('sheet');applied=budget;
  if(!cur){const r=BB.build(budget,use);
-  if(!r.x){sh.innerHTML=`<div class="empty"><h3 class="disp" style="font-size:24px;color:var(--ink)">Not enough for this combination</h3><p>${isFinite(r.min)?`With these choices the cheapest complete build is <b style="color:var(--vio2)">${tk(r.min)}</b>.`:'No processor here can drive a display without a graphics card. Pick a graphics card or a CPU with built-in graphics.'}</p>${isFinite(r.min)?`<button class="btn" type="button" data-set="${Math.ceil(r.min/1000)*1000}">Set budget to ${tk(Math.ceil(r.min/1000)*1000)}</button>`:''}</div>`;return}
+  if(!r.x){sh.innerHTML=`<div class="empty"><h3 class="disp" style="font-size:24px;color:var(--ink)">Not Enough for This Combination</h3><p>${isFinite(r.min)?`With these choices the cheapest complete build is <b style="color:var(--vio2)">${tk(r.min)}</b>.`:'No processor here can drive a display without a graphics card. Pick a graphics card or a CPU with built-in graphics.'}</p>${isFinite(r.min)?`<button class="btn" type="button" data-set="${Math.ceil(r.min/1000)*1000}">Set Budget to ${tk(Math.ceil(r.min/1000)*1000)}</button>`:''}</div>`;return}
   cur=r.x;note=''}
  const x=cur,t=total(x),left=budget-t,pct=Math.min(100,t/budget*100);
  const up=Math.round(budget*1.15/5000)*5000,s=BB.build(up,use);
  let stretch='';if(s.x&&(s.x.cpu!==x.cpu||s.x.gpu!==x.gpu)){const ch=[];if(s.x.gpu!==x.gpu)ch.push(s.x.gpu.n);if(s.x.cpu!==x.cpu)ch.push(s.x.cpu.n);
   stretch=`<div class="stretch">Stretch to <b>${tk(up)}</b> and you'd get the <b>${ch.map(esc).join('</b> with the <b>')}</b>. <button class="btn ghost" type="button" data-set="${up}" style="min-height:36px;margin-left:6px">Try ${tk(up)}</button></div>`}
- sh.innerHTML=`<div class="total"><div><div class="sub">Build total</div><div class="big">${tk(t)}</div></div>
-  <div style="text-align:right"><div class="sub">${left>=0?'Left in budget':'Over budget'}</div><div class="disp" style="font-size:24px;color:${left>=0?'var(--vio2)':'var(--warn)'}">${tk(Math.abs(left))}</div></div>
+ sh.innerHTML=`<div class="total"><div><div class="sub">Build Total</div><div class="big">${tk(t)}</div></div>
+  <div style="text-align:right"><div class="sub">${left>=0?'Left in Budget':'Over Budget'}</div><div class="disp" style="font-size:24px;color:${left>=0?'var(--vio2)':'var(--warn)'}">${tk(Math.abs(left))}</div></div>
   <div class="meter" role="img" aria-label="${Math.round(pct)}% of budget used"><i style="width:${pct}%"></i></div>
   <div class="tags"><span class="tag">${BB.tier(x)}</span><span class="tag">~${need(x.cpu,x.gpu)} W under load</span><span class="tag">${x.ram.gb} GB RAM · ${x.ssd.gb>=1000?x.ssd.gb/1000+' TB':x.ssd.gb+' GB'} SSD</span></div></div>
   ${note?`<p class="note" style="padding:10px 24px 0;margin:0">Adjusted to keep it compatible: ${note}.</p>`:''}
   <ul class="rows">${SLOTS.map(k=>partRow(k,x)).join('')}</ul>
   <div class="checks">${checks(x).map(([ok,tx])=>`<div class="chk${ok?'':' w'}"><b>${ok?'✓':'!'}</b>${tx}</div>`).join('')}</div>
   ${stretch}
-  <div class="foot"><button class="btn" type="button" id="mkimg">Build image</button><button class="btn ghost" type="button" id="copy">Copy list with links</button><button class="btn ghost" type="button" id="rebuild">Rebuild</button><span class="note">${status()}</span></div>`}
+  <div class="foot"><button class="btn" type="button" id="mkimg">Build Photo &amp; Card</button><button class="btn ghost" type="button" id="copy">Copy List with Links</button><span class="note">${status()}</span></div>`}
 function rerun(){cur=null;render();mbar()}
 function mbar(){const b=$('mbar');if(!cur){b.hidden=true;return}b.hidden=false;$('mtot').textContent=tk(total(cur))}
 /* mobile bar: jump between the parts list and the budget controls */
 const onSheet=()=>{const r=$('sheet').getBoundingClientRect();return r.top<innerHeight*.5&&r.bottom>innerHeight*.3};
-let mraf=0;addEventListener('scroll',()=>{if(mraf)return;mraf=requestAnimationFrame(()=>{mraf=0;$('mgo').textContent=onSheet()?'Change budget':'See parts'})},{passive:true});
+let mraf=0;addEventListener('scroll',()=>{if(mraf)return;mraf=requestAnimationFrame(()=>{mraf=0;$('mgo').textContent=onSheet()?'Change Budget':'See Parts'})},{passive:true});
 $('mgo').addEventListener('click',()=>{(onSheet()?$('f'):$('sheet')).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})});
 const state=()=>({b:$('bud').value,u:use,c:$('cpuP').value,g:$('gpuP').value,r:$('ramP').value,s:$('ssdP').value});
 function save(){try{localStorage.setItem('bb-state',JSON.stringify(state()))}catch(e){}}
-function setBudget(v){v=Math.max(40000,Math.min(600000,Math.round(v)));$('bud').value=v;$('budr').value=v;save();rerun()}
+let applied=null;  /* last budget the build was made for: leaving the budget box must not redraw (and swallow a click) when nothing changed */
+function setBudget(v){v=Math.max(40000,Math.min(600000,Math.round(v)));$('bud').value=v;$('budr').value=v;if(v===applied)return;applied=v;save();rerun()}
 $('bud').addEventListener('change',e=>setBudget(+e.target.value||40000));
-$('budr').addEventListener('input',e=>{$('bud').value=e.target.value;save();rerun()});
+$('budr').addEventListener('input',e=>{$('bud').value=e.target.value;applied=+e.target.value;save();rerun()});
 $('presets').addEventListener('click',e=>{const v=e.target.dataset.v;if(v)setBudget(+v)});
 $('use').addEventListener('click',e=>{const v=e.target.dataset.v;if(!v)return;use=v;for(const b of $('use').children)b.setAttribute('aria-pressed',b.dataset.v===v);save();rerun()});
 for(const id of['cpuP','gpuP','ramP','ssdP','stockOnly'])$(id).addEventListener('change',()=>{save();rerun()});
@@ -327,7 +328,7 @@ function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clear
 $('sheet').addEventListener('change',e=>{const k=e.target.dataset.slot;if(!k)return;sync();const o=D[k].find(a=>a.id===e.target.value);cur={...cur,[k]:o};note=BB.fix(cur).join(', ');render();mbar()});
 function listText(x){return`বিন্দাজ Buildz: ${({gaming:'Gaming',creator:'Editing',office:'Office'})[use]} PC, ${tk(total(x))}\n\n`+SLOTS.map(k=>{const o=x[k],L=BB.listing(o);return`${LAB[k]}: ${o.n} — ${pr(o)?tk(pr(o)):'Included'}${L?`\n  ${L.shop}: ${BB.buy(L.url,L.shop)}`:''}`}).join('\n')+`\n\nMade with ${location.origin.startsWith('http')?location.origin+location.pathname:'বিন্দাজ Buildz'}`}
 $('sheet').addEventListener('click',async e=>{const s=e.target.dataset.set;if(s){setBudget(+s);return}
- if(e.target.id==='rebuild'){rerun();return}
+
  if(e.target.id==='mkimg'){openImage();return}
  if(e.target.id==='copy'){try{await navigator.clipboard.writeText(listText(cur));toast('Build list with shop links copied')}catch(err){toast('Copy blocked by the browser')}}});
 
@@ -363,19 +364,55 @@ async function drawBuild(x){try{await document.fonts.ready}catch(e){}
  g.fillStyle='#a69fbd';g.font='500 24px Barlow, sans-serif';g.textAlign='right';
  g.fillText(location.hostname&&!/claude|localhost|usercontent/.test(location.hostname)?location.hostname:'Smart PC builds for Bangladesh',W-40,H-42);g.textAlign='left';
  return cv}
-let lastBlob=null;
-async function openImage(){const d=$('imgdlg');$('imgprev').removeAttribute('src');$('imgstat').textContent='Drawing your build…';d.showModal();
- const cv=await drawBuild(cur);
- try{lastBlob=await new Promise(r=>cv.toBlob(r,'image/png'));$('imgprev').src=URL.createObjectURL(lastBlob);$('imgstat').textContent='Save it or share it to Facebook, Messenger or WhatsApp.'}
- catch(e){lastBlob=null;$('imgprev').src='';$('imgstat').textContent='Product photos could not be added here. Hosted on Cloudflare, the image includes them.'}}
+/* ---------- real-life picture: AI render of the assembled PC (worker.js /render) ---------- */
+function look(x){const c=x.case,g=x.gpu,q=x.cooler,txt=(c.n+' '+(c.sp||'')).toLowerCase();
+ const kase=c.t>=4?'show':c.atx===0||c.atx===undefined&&c.t<=1?'matx':'mid';
+ const gpu=g.id==='none'?'none':g.big?'big':g.g>=45?'mid':'small';
+ const liquid=/liquid|aio/i.test(q.n+' '+(q.sp||''));
+ const cool=q.id==='stock'?'stock':liquid?((q.cap||0)>=300||/360|420/.test(q.n+' '+(q.sp||''))?'aio360':'aio240'):(q.cap||0)>=200?'dual':'air';
+ const ram=/2\s*(?:x|×)|2 sticks|kit|dual/i.test(x.ram.n+' '+(x.ram.sp||''))?'2':'1';
+ const color=/white|snow|frost/.test(txt)?'white':'black';
+ return{case:kase,gpu,cool,ram,color}}
+async function drawReal(x){const L=look(x),qs=new URLSearchParams(L).toString();
+ const ai=await loadImg(ROOT+'render?'+qs,true);if(!ai)return null;
+ try{await document.fonts.ready}catch(e){}
+ const W=1080,H=1350,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+ g.fillStyle='#0b0814';g.fillRect(0,0,W,H);
+ const s=Math.max(W/ai.width,1080/ai.height);g.drawImage(ai,(W-ai.width*s)/2,0,ai.width*s,ai.height*s);
+ const fade=g.createLinearGradient(0,820,0,1110);fade.addColorStop(0,'rgba(11,8,20,0)');fade.addColorStop(1,'rgba(11,8,20,1)');g.fillStyle=fade;g.fillRect(0,820,W,290);
+ g.fillStyle='#0b0814';g.fillRect(0,1080,W,270);
+ const logo=await loadImg(ROOT+'logo.webp',true);if(logo){g.globalAlpha=.95;g.drawImage(logo,28,24,260,260*logo.height/logo.width);g.globalAlpha=1}
+ g.fillStyle='#c9a2ff';g.font='600 30px "Chakra Petch", sans-serif';g.fillText(`${({gaming:'Gaming',creator:'Editing',office:'Office'})[use]} PC`,50,1048);
+ g.fillStyle='#eeebf6';g.font='700 92px "Chakra Petch", sans-serif';g.fillText(tk(total(x)),48,1140);
+ g.fillStyle='#eeebf6';g.font='600 30px Barlow, sans-serif';
+ const main=[x.gpu.id!=='none'?x.gpu.n:null,x.cpu.n].filter(Boolean).join('  +  ');wrap(g,main,W-100,2).forEach((l,i)=>g.fillText(l,50,1192+i*38));
+ g.fillStyle='#a69fbd';g.font='500 24px Barlow, sans-serif';g.fillText(`${x.ram.gb} GB RAM · ${x.ssd.gb>=1000?x.ssd.gb/1000+' TB':x.ssd.gb+' GB'} SSD · ${BB.tier(x)}`,50,1270);
+ g.fillStyle='#9d5cff';g.fillRect(50,1296,W-100,3);
+ g.fillStyle='#a69fbd';g.font='500 20px Barlow, sans-serif';g.fillText('AI illustration of this build. Real parts may look different.',50,1330);
+ g.textAlign='right';g.fillStyle='#eeebf6';g.font='600 22px "Hind Siliguri", "Chakra Petch", sans-serif';
+ g.fillText(location.hostname&&!/claude|localhost|usercontent/.test(location.hostname)?location.hostname:'বিন্দাজ Buildz',W-50,1330);g.textAlign='left';
+ return cv}
+const pics={card:null,real:null};let mode='real',picFor=null,lastBlob=null;
+async function toBlob(cv){try{return await new Promise(r=>cv.toBlob(r,'image/png'))}catch(e){return null}}
+function showPic(){for(const b of $('imgtabs').children)b.setAttribute('aria-pressed',b.dataset.m===mode);
+ const p=pics[mode];lastBlob=p&&p.blob||null;
+ if(p&&p.url){$('imgprev').src=p.url;$('imgstat').textContent=mode==='real'?'A realistic picture of this build, drawn by AI. Real parts may look different. Save it or share it.':'Every part with photo, price and shop. Save it or share it to Facebook, Messenger or WhatsApp.'}
+ else{$('imgprev').removeAttribute('src');$('imgstat').textContent=p&&p.err?p.err:(mode==='real'?'Creating a realistic picture of your PC… this can take up to 20 seconds the first time.':'Drawing your build…')}}
+async function makePic(m,x){pics[m]=null;if(mode===m)showPic();
+ const cv=m==='real'?await drawReal(x):await drawBuild(x);if(picFor!==x)return;
+ if(!cv){pics[m]={err:m==='real'?'The realistic picture isn’t available right now (the free daily limit may be used up). Please try again later, or use the Parts card.':'Could not draw the picture.'};if(mode===m)showPic();return}
+ const blob=await toBlob(cv);pics[m]=blob?{blob,url:URL.createObjectURL(blob)}:{err:'Product photos could not be added here. On the live site the picture includes them.'};if(mode===m)showPic()}
+async function openImage(){const d=$('imgdlg');d.showModal();
+ if(picFor!==cur){picFor=cur;pics.card=pics.real=null;makePic('real',cur);makePic('card',cur)}showPic()}
+$('imgtabs').addEventListener('click',e=>{const m=e.target.dataset.m;if(m){mode=m;showPic()}});
 $('imgclose').addEventListener('click',()=>$('imgdlg').close());
-$('imgsave').addEventListener('click',()=>{if(!lastBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=`bindaaz-build-${Math.round(total(cur))}.png`;document.body.append(a);a.click();a.remove()});
+$('imgsave').addEventListener('click',()=>{if(!lastBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=`bindaaz-build-${mode==='real'?'photo':'parts'}-${Math.round(total(cur))}.png`;document.body.append(a);a.click();a.remove()});
 $('imgshare').addEventListener('click',async()=>{if(!lastBlob)return;const f=new File([lastBlob],'bindaaz-build.png',{type:'image/png'});
  try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],title:'My PC build',text:listText(cur)});else{await navigator.clipboard.writeText(listText(cur));toast('Sharing not supported here: list copied instead')}}catch(e){}});
 
 /* ---------- price list ---------- */
 let tab='cpu',plimit=25;
-function renderPrices(){const all=D[tab].filter(o=>o.id!=='none'&&o.id!=='stock');$('pmore').hidden=all.length<=plimit;$('pmore').textContent=`Show all ${all.length}`;$('tabs').innerHTML=SLOTS.map(k=>`<button type="button" class="chip" data-k="${k}" aria-pressed="${k===tab}">${LAB[k]}</button>`).join('');
+function renderPrices(){const all=D[tab].filter(o=>o.id!=='none'&&o.id!=='stock');$('pmore').hidden=all.length<=plimit;$('pmore').textContent=`Show All ${all.length}`;$('tabs').innerHTML=SLOTS.map(k=>`<button type="button" class="chip" data-k="${k}" aria-pressed="${k===tab}">${LAB[k]}</button>`).join('');
  $('ptable').innerHTML=`<thead><tr><th></th><th>Part</th><th>Where</th><th class="num">Price (৳)</th></tr></thead><tbody>${all.slice(0,plimit).map(o=>{const L=BB.listing(o);
   return`<tr><td>${thumb(L&&L.img,tab,'tth')}</td><td>${esc(o.n)}<div class="note">${esc(o.sp)}</div></td><td>${L?`<a href="${esc(BB.buy(L.url,L.shop))}" target="_blank" rel="${rel(L.shop)}">${esc(L.shop)}</a>${L.stock?'':' <span class="oos">out of stock</span>'}`:'Estimate'}</td><td class="num"><input type="number" min="0" step="100" data-id="${o.id}" value="${pr(o)}" class="${BB.OV[o.id]!=null?'chg':''}" aria-label="Price of ${esc(o.n)}"></td></tr>`}).join('')}</tbody>`}
 $('tabs').addEventListener('click',e=>{const k=e.target.dataset.k;if(k){tab=k;plimit=25;renderPrices()}});
@@ -387,7 +424,7 @@ $('resetP').addEventListener('click',()=>{BB.OV={};try{localStorage.removeItem('
 
 /* ---------- all products ---------- */
 let climit=48,qt;
-$('ccat').innerHTML='<option value="">All categories</option>'+SLOTS.map(k=>`<option value="${k}">${LAB[k]}</option>`).join('');
+$('ccat').innerHTML='<option value="">All Categories</option>'+SLOTS.map(k=>`<option value="${k}">${LAB[k]}</option>`).join('');
 function renderCat(){const CAT=BB.CAT;if(BB.META&&!full){$('cstatus').textContent='Loading all products…';return}if(!BB.META){$('cgrid').innerHTML='';$('cmore').hidden=true;$('cstatus').textContent='Every product from Star Tech, Ryans and Tech Land, with photos and buy links, appears here when the site is hosted with the product crawler.';return}
  const q=$('q').value.trim().toLowerCase().split(/\s+/).filter(Boolean),c=$('ccat').value,sh=$('cshop').value,so=$('csort').value,st=$('cstock').checked;
  const L=CAT.filter(i=>(!c||i.c===c)&&(!sh||i.s===sh)&&(!st||i.st)&&q.every(w=>i.n.toLowerCase().includes(w)));
@@ -413,7 +450,7 @@ async function getJSON(f){try{const r=await fetch(ROOT+f,{cache:'no-cache'});ret
 let full=false,fullP=null;
 function loadFull(){if(fullP)return fullP;fullP=(async()=>{const j=await getJSON('catalog.json');if(j&&Array.isArray(j.items)&&j.items.length){BB.CAT=j.items;full=true;if(!BB.META){BB.applyCatalog(j);rerun();renderPrices()}}renderCat()})();return fullP}
 (async()=>{let j=await getJSON('parts.json');if(!(j&&Array.isArray(j.items)&&j.items.length)){j=await getJSON('catalog.json');if(j&&j.items&&j.items.length)full=true}
- if(j&&Array.isArray(j.items)&&j.items.length){BB.applyCatalog(j);if(j.total)BB.META.total=j.total;$('cshop').innerHTML='<option value="">All shops</option>'+(j.shops||[]).map(x=>`<option>${esc(x)}</option>`).join('');
+ if(j&&Array.isArray(j.items)&&j.items.length){BB.applyCatalog(j);if(j.total)BB.META.total=j.total;$('cshop').innerHTML='<option value="">All Shops</option>'+(j.shops||[]).map(x=>`<option>${esc(x)}</option>`).join('');
   $('pstatus').textContent=status();renderPrices();rerun()}
  if(full)renderCat();else{try{new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){o.disconnect();loadFull()}},{rootMargin:'600px'}).observe($('products'))}catch(e){loadFull()}}})();
 $('q').addEventListener('focus',()=>loadFull(),{once:true});

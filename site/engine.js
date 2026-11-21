@@ -155,14 +155,16 @@ const Q=[
 {id:'q4b',n:'Arctic Liquid Freezer III 360',cap:330,p:14000,sp:'AIO, thick radiator',from:300000},
 {id:'q4',n:'Deepcool LT720 360 mm liquid cooler',cap:320,p:15000,sp:'AIO, ARGB',from:320000}];
 const D={cpu:C,gpu:G,board:B,ram:R,ssd:S,psu:P,case:K,cooler:Q};
-const LAB={cpu:'Processor',gpu:'Graphics',board:'Motherboard',ram:'Memory',ssd:'Storage',psu:'Power supply',case:'Case',cooler:'CPU cooler'};
+const LAB={cpu:'Processor',gpu:'Graphics Card',board:'Motherboard',ram:'Memory',ssd:'Storage',psu:'Power Supply',case:'Case',cooler:'CPU Cooler'};
 const SLOTS=['cpu','gpu','board','ram','ssd','psu','case','cooler'];
 const BB={C,G,B,R,S,P,K,Q,D,LAB,SLOTS,LIVE:{},META:null,CAT:[],OV:{},AFF:{},
  opt:{stockOnly:true,ram:0,ssd:0,cpu:'any',gpu:'any',avoidA:true}};
 const O=BB.opt;
 const isFixed=x=>x.id==='none'||x.id==='stock';
 const pr=BB.pr=x=>BB.OV[x.id]??(x.live?x.p:BB.LIVE[x.id]?.price??x.p);
-const inStock=BB.inStock=x=>x.live?x.st!==0:isFixed(x)?true:BB.META?!!BB.LIVE[x.id]?.stock:true;
+/* processor/graphics models (they have a brand, b) are in stock only if a shop lists them in stock;
+   built-in parts of other categories stay usable when the catalogue has none of that category */
+const inStock=BB.inStock=x=>x.live?x.st!==0:isFixed(x)?true:(BB.META&&x.b)?!!BB.LIVE[x.id]?.stock:true;
 const avail=BB.avail=x=>!O.stockOnly||inStock(x)||isFixed(x);
 /* where to buy a part: the shop listing (with affiliate template applied) */
 BB.buy=(url,shop)=>{const t=BB.AFF[shop];return t?t.replace('{url_encoded}',encodeURIComponent(url)).replace('{url}',url):url};
@@ -190,7 +192,7 @@ const need=BB.need=(c,g)=>c.w+g.w+80;
 const boardOk=BB.boardOk=(c,b)=>b.s===c.s&&b.t>=c.t&&(c.mem==='both'||c.mem===b.mem);
 const boardFit=(c,b)=>boardOk(c,b)&&b.t<=c.t+1;
 const psuOk=BB.psuOk=(c,g,p)=>p.w>=need(c,g)*1.4;
-const coolOk=BB.coolOk=(c,q)=>q.id==='stock'?(c.cool&&c.w<=125):q.cap>=c.w;
+const coolOk=BB.coolOk=(c,q)=>q.id==='stock'?!!(c.cool&&c.w<=125):q.cap>=c.w;
 const caseOk=BB.caseOk=(b,g,k)=>(!b.atx||k.atx)&&(!g.big||k.t>=2);
 const checks=BB.checks=function(x){const o=[];
  o.push([x.board.s===x.cpu.s,`CPU socket ${x.cpu.s} matches motherboard`]);
