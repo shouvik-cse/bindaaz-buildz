@@ -22,6 +22,7 @@ import datetime as dt
 import hashlib
 import json
 import random
+import os
 import re
 import sys
 import time
@@ -39,13 +40,20 @@ ROOT = Path(__file__).resolve().parent.parent
 SHOPS = ROOT / "scraper" / "shops.json"
 OUT = ROOT / "site" / "catalog.json"
 
-UA = "BindaazBuildzPriceBot/2.0 (PC-builder price comparison)"
+UA = "BindaazBuildzPriceBot/2.1 (+https://bindaaz-buildz.smart-builder.workers.dev/about/; PC-builder price comparison)"
 DELAY = (2.0, 4.0)
 MAX_PAGES = 80
 PRICE_MIN, PRICE_MAX = 300, 2_000_000
 
 session = requests.Session()
-session.headers.update({"User-Agent": UA, "Accept-Language": "en-US,en;q=0.8"})
+session.headers.update({"User-Agent": UA, "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                        "Accept-Language": "en-US,en;q=0.8,bn;q=0.6", "Accept-Encoding": "gzip, deflate"})
+# a page that is really a bot check ("Just a moment…", captcha) instead of the shop
+CHALLENGE_RX = re.compile(r"just a moment|cf-chl|challenge-platform|checking your browser|captcha|access denied|attention required", re.I)
+WHY = {"robots": "blocked by the shop's robots.txt (the crawler respects it)", 403: "HTTP 403: the shop refuses automated requests from GitHub's servers",
+       429: "HTTP 429: too many requests, the shop asked us to slow down", 404: "HTTP 404: category page not found",
+       "challenge": "the shop showed a bot check (captcha / 'Just a moment') instead of products",
+       "failed": "no answer from the shop (timeout or connection error)", "empty": "page opened but no products were recognised"}
 _robots, _last = {}, {}
 
 BAD_HREF = re.compile(r"(/category/|[?&](page|sort|limit|order|filter)=|cart|compare|wishlist|login|register|account|checkout|"
@@ -98,6 +106,8 @@ def get(url):
         try:
             r = session.get(url, timeout=30)
             if r.status_code == 200:
+                if len(r.text) < 60000 and CHALLENGE_RX.search(r.text[:20000]) and "৳" not in r.text and "Tk" not in r.text:
+                    return "challenge", ""
                 return 200, r.text
             if r.status_code in (403, 404, 410, 429):
                 return r.status_code, ""
@@ -314,6 +324,8 @@ def crawl_listing(shop, base, max_pages):
         cards = parse_listing(html, url, shop)
         new = [c for c in cards if c["u"] not in seen]
         if not new:
+            if n == 1:
+                return items, "empty"
             break
         for c in new:
             seen.add(c["u"])
@@ -387,6 +399,7 @@ def main():
             items.extend(got)
 
     if args.check:
+        summary(report)
         print("\nCheck only, nothing written.")
         return 0
     if args.shop or args.cat:  # partial run: merge with the untouched rest
@@ -397,10 +410,23 @@ def main():
     OUT.write_text(json.dumps({"updated": now(), "shops": shops, "items": items},
                               ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"\n{len(items)} products from {len(shops)} shops -> {OUT}")
-    bad = [r for r in report if r[4] or r[2] == 0]
-    if bad:
-        print("Categories with problems:", ", ".join(f"{r[0]}/{r[1]} ({r[4] or 'no products'})" for r in bad))
+    summary(report)
     return 0
+
+
+def summary(report):
+    """Per-shop table in the log, and on the GitHub Actions run page (Summary tab)."""
+    lines = ["| Shop | Products | Usable by the builder | Categories with problems |", "|---|---:|---:|---|"]
+    print("\nSHOP SUMMARY")
+    for shop in dict.fromkeys(r[0] for r in report):
+        rows = [r for r in report if r[0] == shop]
+        got, used = sum(r[2] for r in rows), sum(r[3] for r in rows)
+        bad = [f"{r[1]}: {WHY.get(r[4], r[4] or WHY['empty'])}" for r in rows if r[4] or r[2] == 0]
+        print(f"  {shop:20} {got:6} products  {used:6} usable" + ("" if not bad else "   PROBLEMS: " + "; ".join(bad)))
+        lines.append(f"| {shop} | {got} | {used} | {'<br>'.join(bad) or 'none'} |")
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+            f.write("## Shop check\n\n" + "\n".join(lines) + "\n")
 
 
 if __name__ == "__main__":

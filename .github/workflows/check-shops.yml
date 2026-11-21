@@ -1,0 +1,28 @@
+name: Check shops
+
+# Quick test: opens only the first page of every category of every shop (about 3 minutes)
+# and shows a table of what worked and WHY anything failed, on the run's Summary page.
+# Nothing is saved and the website doesn't change.
+on:
+  workflow_dispatch:
+    inputs:
+      shop:
+        description: "Only this shop (leave empty for all), e.g. Star Tech"
+        required: false
+        default: ""
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scraper/requirements.txt
+      - name: Check the shops
+        env:
+          SHOP: ${{ inputs.shop }}
+        run: |
+          if [ -n "$SHOP" ]; then python scraper/crawl.py --check --shop "$SHOP"; else python scraper/crawl.py --check; fi

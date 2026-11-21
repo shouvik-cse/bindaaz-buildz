@@ -175,3 +175,26 @@ def test_opencart_cards_ignore_old_and_tax_price():
     a, b = crawl.parse_listing(html, "https://www.creatus.com.bd/graphics-card", shop)
     assert (a["p"], a["st"]) == (41800, 1)
     assert b["st"] == 0
+
+
+def test_bot_check_page_is_reported_not_parsed(monkeypatch):
+    """TC-K16 [error guessing] a 'Just a moment…' / captcha page is reported as a bot check, with the reason in plain words."""
+    class R:
+        status_code, text = 200, "<html><title>Just a moment...</title><div id='cf-chl-widget'></div></html>"
+    monkeypatch.setattr(crawl, "allowed", lambda u: True)
+    monkeypatch.setattr(crawl.session, "get", lambda url, timeout: R())
+    monkeypatch.setattr(crawl, "DELAY", (0, 0))
+    assert crawl.get("https://www.startech.com.bd/component/processor") == ("challenge", "")
+    assert "bot check" in crawl.WHY["challenge"] and "403" in crawl.WHY[403]
+
+
+def test_summary_explains_each_failing_shop(tmp_path, monkeypatch, capsys):
+    """TC-K17 [usability] the end-of-crawl summary names every shop and the reason for each failing category,
+    and writes the same table to the GitHub Actions Summary page."""
+    out = tmp_path / "summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(out))
+    crawl.summary([("Star Tech", "cpu", 0, 0, 403), ("Star Tech", "gpu", 0, 0, "robots"), ("Ryans", "cpu", 120, 110, None)])
+    log = capsys.readouterr().out
+    assert "Star Tech" in log and "refuses automated requests" in log and "robots.txt" in log
+    table = out.read_text()
+    assert "| Ryans | 120 | 110 | none |" in table and "| Star Tech | 0 | 0 |" in table
