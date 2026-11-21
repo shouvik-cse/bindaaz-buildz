@@ -54,9 +54,9 @@ nav .links{display:flex;gap:18px;margin-left:auto;flex-wrap:wrap}
 nav .links a{color:var(--mute);text-decoration:none;font-weight:600}nav .links a:hover{color:var(--ink)}
 .hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(20px,4vw,56px);align-items:center;padding-bottom:12px}
 .hero img{width:100%;height:auto;display:block;filter:drop-shadow(0 0 40px rgba(157,92,255,.25))}
-.hero h1{font-size:clamp(32px,4.4vw,50px)}
+.hero h1{font-size:clamp(32px,4.4vw,50px);text-wrap:initial}.hero h1 .hl{display:block}.hero h1 em{white-space:nowrap}.hero>div{max-width:560px}
 .hero h1 em{font-style:normal;color:var(--vio2)}
-.hero p{color:var(--mute);max-width:52ch;margin:16px 0 0;font-size:17px}
+.hero p{color:var(--mute);max-width:none;margin:16px 0 0;font-size:17px;text-wrap:pretty}
 .builder{display:grid;grid-template-columns:minmax(0,370px) minmax(0,1fr);gap:24px;align-items:start}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px}
 .ctrl{padding:22px;position:sticky;top:76px}
@@ -93,7 +93,7 @@ select:focus,input:focus,button:focus-visible{outline:2px solid var(--vio);outli
 .checks{padding:18px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 18px}
 .chk{font-size:15px;display:flex;gap:8px}
 .chk b{color:var(--ok)}.chk.w b{color:var(--warn)}
-.foot{padding:16px 24px 22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid var(--line)}
+.foot{padding:16px 24px 22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid var(--line)}.foot .note{flex:1 1 100%;margin:4px 0 0}
 .btn{min-height:44px;padding:0 18px;border-radius:10px;border:1px solid var(--vio);background:var(--vio);color:#fff;font:600 15px Barlow,system-ui,sans-serif;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--vio2)}
 .stretch{margin:0 24px 20px;padding:14px 16px;border:1px dashed var(--vio);border-radius:12px;font-size:15px}
@@ -107,7 +107,7 @@ select:focus,input:focus,button:focus-visible{outline:2px solid var(--vio);outli
 .pcard{display:grid;gap:4px;align-content:start;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;color:var(--ink)}.pcard:hover{border-color:var(--vio)}
 .pimg{width:100%;aspect-ratio:1;margin-bottom:6px}.pc{font:600 12px "Chakra Petch",system-ui,sans-serif;color:var(--vio2)}.pn{font-size:15px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.pp{font:700 20px "Chakra Petch",system-ui,sans-serif}.ps{font-size:13px;color:var(--mute)}
 dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:0;max-width:min(560px,94vw)}dialog::backdrop{background:rgba(5,3,10,.8)}
-.dlg{padding:18px;display:grid;gap:10px}.seg2{grid-template-columns:1fr 1fr}.dlg img{width:100%;aspect-ratio:4/5;border-radius:10px;background:#0b0814;object-fit:contain}.dlgb{display:flex;flex-wrap:wrap;gap:8px}
+.dlg{padding:18px;display:grid;gap:10px}.seg2{grid-template-columns:1fr 1fr}.dlg img{width:100%;aspect-ratio:4/5;border-radius:10px;background:#0b0814;object-fit:contain}.dlg img:not([src]){visibility:hidden}.dlgb{display:flex;flex-wrap:wrap;gap:8px}
 section h2{font-size:clamp(28px,3.4vw,40px)}
 .cat-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:20px 0}
 .cat-tabs .chip[aria-pressed=true]{background:var(--vio);border-color:var(--vio);color:#fff}
@@ -183,8 +183,8 @@ input[type=range]{height:44px;touch-action:pan-y}
 <header class="band" id="top"><div class="wrap hero">
   <img src="logo.webp" fetchpriority="high" decoding="async" alt="বিন্দাজ Buildz logo: silver lettering beside a glowing violet PC case" width="780" height="408">
   <div>
-    <h1 id="h1">Set Your Budget. Get a <em>Complete PC</em>, Part by Part.</h1>
-    <p id="intro">Pick a taka budget, and if you like, a CPU or graphics card you've set your heart on. বিন্দাজ Buildz fills in the motherboard, RAM, SSD, power supply, case and cooler, checks that everything fits together, and keeps the total inside your budget.</p>
+    <h1 id="h1"><span class="hl">Set Your Budget.</span> <span class="hl">Get a <em>Complete PC</em></span> <span class="hl">Part by Part.</span></h1>
+    <p id="intro">Pick a taka budget and, if you like, the CPU or graphics card you have set your heart on. বিন্দাজ Buildz fills in the motherboard, RAM, SSD, power supply, case and cooler. It checks that everything fits together and keeps the total inside your budget.</p>
     <p class="note hnote">Monitor, keyboard, mouse and Windows licence are not included.</p>
   </div>
 </div></header>
@@ -241,10 +241,10 @@ input[type=range]{height:44px;touch-action:pan-y}
 
 <section class="band" id="faq"><div class="wrap" style="max-width:860px">
   <h2>Questions People Ask</h2>
-  <details open><summary>How much does a gaming PC cost in Bangladesh right now?</summary><p>A PC that plays esports games at 1080p starts around ৳70,000. A solid 1080p high-settings build with an RTX 5060 or RX 9060 XT costs about ৳90,000–1,10,000, and 1440p gaming with an RTX 5070 or RX 9070 XT starts around ৳1,60,000. RAM and SSD prices are high in 2026, so the builder starts you on 16 GB and 512 GB and lets you add more.</p></details>
+  <details open><summary>How much does a gaming PC cost in Bangladesh right now?</summary><p>A PC that plays esports games at 1080p starts around ৳70,000. A solid 1080p high-settings build with an RTX 5060 or RX 9060 XT costs about ৳90,000–1,10,000. 1440p gaming with an RTX 5070 or RX 9070 XT starts around ৳1,60,000. RAM and SSD prices are high in 2026. That is why the builder starts you on 16 GB and 512 GB and lets you add more.</p></details>
   <details><summary>Where do the prices come from?</summary><p>From the product pages of Star Tech, Ryans and Tech Land, read automatically several times a day. Each part shows which shop the price is from, with a link. Always confirm the price and warranty with the shop before buying.</p></details>
   <details><summary>Does the build include a monitor, keyboard or mouse?</summary><p>No. Every build covers the processor, graphics card, motherboard, RAM, SSD, power supply, case and CPU cooler. Monitor, keyboard, mouse and Windows licence are extra.</p></details>
-  <details><summary>Will all the parts work together?</summary><p>Yes. The builder checks the CPU socket against the motherboard, DDR4 or DDR5 memory, power supply wattage, cooler capacity and case size. It also picks a motherboard of the right class for the processor, so a Ryzen 7 never sits on an entry-level board.</p></details>
+  <details><summary>Will all the parts work together?</summary><p>Yes. The builder checks the CPU socket against the motherboard, DDR4 or DDR5 memory, power supply wattage, cooler capacity and case size. It also picks a motherboard of the right class for the processor. A Ryzen 7 never sits on an entry-level board.</p></details>
   <details><summary>বাংলায় কীভাবে ব্যবহার করব?</summary><p>আপনার বাজেট টাকায় লিখুন, গেমিং, এডিটিং বা অফিস বেছে নিন। চাইলে নির্দিষ্ট প্রসেসর বা গ্রাফিক্স কার্ড বেছে নিতে পারেন। বিন্দাজ Buildz বাকি সব পার্টস বেছে দেবে, দোকানের আজকের দামসহ।</p></details>
 </div></section>
 
@@ -256,7 +256,7 @@ input[type=range]{height:44px;touch-action:pan-y}
 </div></footer>
 <div class="toast" id="toast"></div>
 <div class="mbar" id="mbar" hidden><div><span class="sub">Build Total</span><b id="mtot">—</b></div><button class="btn" type="button" id="mgo">See Parts</button></div>
-<dialog id="imgdlg" aria-label="Build image"><div class="dlg"><div class="seg seg2" id="imgtabs"><button type="button" data-m="real" aria-pressed="true">Real-Life Photo</button><button type="button" data-m="card" aria-pressed="false">Parts Card</button></div><img id="imgprev" alt="Picture of your complete PC build"><p class="note" id="imgstat"></p>
+<dialog id="imgdlg" aria-label="Build image"><div class="dlg"><img id="imgprev" alt="Parts card of your PC build: every part with photo, price and shop"><p class="note" id="imgstat"></p>
 <div class="dlgb"><button class="btn" type="button" id="imgsave">Download Image</button><button class="btn ghost" type="button" id="imgshare">Share</button><button class="btn ghost" type="button" id="imgclose">Close</button></div></div></dialog>
 
 <script src="engine.js"></script>
@@ -274,7 +274,8 @@ const rel=shop=>BB.AFF[shop]?'sponsored nofollow noopener':'nofollow noopener';
 const thumb=(src,k,cls='th')=>src?`<img class="${cls}" src="${esc(src)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-k="${k}">`:`<span class="${cls} ph">${SHORT[k]||''}</span>`;
 function ago(iso){const h=(Date.now()-new Date(iso))/36e5;return h<1?'less than an hour ago':h<48?Math.round(h)+' hours ago':Math.round(h/24)+' days ago'}
 function status(){if(!BB.META)return'Built-in estimate prices. Live shop prices, links and photos appear when the site is hosted with the product crawler.';
- return`Live prices: ${(BB.META.total||BB.CAT.length).toLocaleString('en-IN')} products from ${esc((BB.META.shops||[]).join(', '))}, updated ${ago(BB.META.updated)}.`}
+ return`Live prices: ${(BB.META.total||BB.CAT.length).toLocaleString('en-IN')} products from ${esc(andList(BB.META.shops||[]))}. Updated ${ago(BB.META.updated)}.`}
+function andList(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a.at(-1)}
 /* replace broken product photos with a labelled placeholder */
 document.addEventListener('error',e=>{const t=e.target;if(t.tagName==='IMG'&&t.dataset.k!==undefined){const s=document.createElement('span');s.className=t.className+' ph';s.textContent=SHORT[t.dataset.k]||'';t.replaceWith(s)}},true);
 
@@ -307,7 +308,7 @@ function render(){sync();const budget=+$('bud').value||0,sh=$('sheet');applied=b
   <ul class="rows">${SLOTS.map(k=>partRow(k,x)).join('')}</ul>
   <div class="checks">${checks(x).map(([ok,tx])=>`<div class="chk${ok?'':' w'}"><b>${ok?'✓':'!'}</b>${tx}</div>`).join('')}</div>
   ${stretch}
-  <div class="foot"><button class="btn" type="button" id="mkimg">Build Photo &amp; Card</button><button class="btn ghost" type="button" id="copy">Copy List with Links</button><span class="note">${status()}</span></div>`}
+  <div class="foot"><button class="btn" type="button" id="mkimg">Build Image</button><button class="btn ghost" type="button" id="copy">Copy List with Links</button><span class="note">${status()}</span></div>`}
 function rerun(){cur=null;render();mbar()}
 function mbar(){const b=$('mbar');if(!cur){b.hidden=true;return}b.hidden=false;$('mtot').textContent=tk(total(cur))}
 /* mobile bar: jump between the parts list and the budget controls */
@@ -364,49 +365,20 @@ async function drawBuild(x){try{await document.fonts.ready}catch(e){}
  g.fillStyle='#a69fbd';g.font='500 24px Barlow, sans-serif';g.textAlign='right';
  g.fillText(location.hostname&&!/claude|localhost|usercontent/.test(location.hostname)?location.hostname:'Smart PC builds for Bangladesh',W-40,H-42);g.textAlign='left';
  return cv}
-/* ---------- real-life picture: AI render of the assembled PC (worker.js /render) ---------- */
-function look(x){const c=x.case,g=x.gpu,q=x.cooler,txt=(c.n+' '+(c.sp||'')).toLowerCase();
- const kase=c.t>=4?'show':c.atx===0||c.atx===undefined&&c.t<=1?'matx':'mid';
- const gpu=g.id==='none'?'none':g.big?'big':g.g>=45?'mid':'small';
- const liquid=/liquid|aio/i.test(q.n+' '+(q.sp||''));
- const cool=q.id==='stock'?'stock':liquid?((q.cap||0)>=300||/360|420/.test(q.n+' '+(q.sp||''))?'aio360':'aio240'):(q.cap||0)>=200?'dual':'air';
- const ram=/2\s*(?:x|×)|2 sticks|kit|dual/i.test(x.ram.n+' '+(x.ram.sp||''))?'2':'1';
- const color=/white|snow|frost/.test(txt)?'white':'black';
- return{case:kase,gpu,cool,ram,color}}
-async function drawReal(x){const L=look(x),qs=new URLSearchParams(L).toString();
- const ai=await loadImg(ROOT+'render?'+qs,true);if(!ai)return null;
- try{await document.fonts.ready}catch(e){}
- const W=1080,H=1350,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
- g.fillStyle='#0b0814';g.fillRect(0,0,W,H);
- const s=Math.max(W/ai.width,1080/ai.height);g.drawImage(ai,(W-ai.width*s)/2,0,ai.width*s,ai.height*s);
- const fade=g.createLinearGradient(0,820,0,1110);fade.addColorStop(0,'rgba(11,8,20,0)');fade.addColorStop(1,'rgba(11,8,20,1)');g.fillStyle=fade;g.fillRect(0,820,W,290);
- g.fillStyle='#0b0814';g.fillRect(0,1080,W,270);
- const logo=await loadImg(ROOT+'logo.webp',true);if(logo){g.globalAlpha=.95;g.drawImage(logo,28,24,260,260*logo.height/logo.width);g.globalAlpha=1}
- g.fillStyle='#c9a2ff';g.font='600 30px "Chakra Petch", sans-serif';g.fillText(`${({gaming:'Gaming',creator:'Editing',office:'Office'})[use]} PC`,50,1048);
- g.fillStyle='#eeebf6';g.font='700 92px "Chakra Petch", sans-serif';g.fillText(tk(total(x)),48,1140);
- g.fillStyle='#eeebf6';g.font='600 30px Barlow, sans-serif';
- const main=[x.gpu.id!=='none'?x.gpu.n:null,x.cpu.n].filter(Boolean).join('  +  ');wrap(g,main,W-100,2).forEach((l,i)=>g.fillText(l,50,1192+i*38));
- g.fillStyle='#a69fbd';g.font='500 24px Barlow, sans-serif';g.fillText(`${x.ram.gb} GB RAM · ${x.ssd.gb>=1000?x.ssd.gb/1000+' TB':x.ssd.gb+' GB'} SSD · ${BB.tier(x)}`,50,1270);
- g.fillStyle='#9d5cff';g.fillRect(50,1296,W-100,3);
- g.fillStyle='#a69fbd';g.font='500 20px Barlow, sans-serif';g.fillText('AI illustration of this build. Real parts may look different.',50,1330);
- g.textAlign='right';g.fillStyle='#eeebf6';g.font='600 22px "Hind Siliguri", "Chakra Petch", sans-serif';
- g.fillText(location.hostname&&!/claude|localhost|usercontent/.test(location.hostname)?location.hostname:'বিন্দাজ Buildz',W-50,1330);g.textAlign='left';
- return cv}
-const pics={card:null,real:null};let mode='real',picFor=null,lastBlob=null;
+const pics={card:null};const mode='card';let picFor=null,lastBlob=null;
 async function toBlob(cv){try{return await new Promise(r=>cv.toBlob(r,'image/png'))}catch(e){return null}}
-function showPic(){for(const b of $('imgtabs').children)b.setAttribute('aria-pressed',b.dataset.m===mode);
+function showPic(){
  const p=pics[mode];lastBlob=p&&p.blob||null;
- if(p&&p.url){$('imgprev').src=p.url;$('imgstat').textContent=mode==='real'?'A realistic picture of this build, drawn by AI. Real parts may look different. Save it or share it.':'Every part with photo, price and shop. Save it or share it to Facebook, Messenger or WhatsApp.'}
- else{$('imgprev').removeAttribute('src');$('imgstat').textContent=p&&p.err?p.err:(mode==='real'?'Creating a realistic picture of your PC… this can take up to 20 seconds the first time.':'Drawing your build…')}}
+ if(p&&p.url){$('imgprev').src=p.url;$('imgstat').textContent='Every part with photo, price and shop. Save it or share it to Facebook, Messenger or WhatsApp.'}
+ else{$('imgprev').removeAttribute('src');$('imgstat').textContent=p&&p.err?p.err:'Drawing your build…'}}
 async function makePic(m,x){pics[m]=null;if(mode===m)showPic();
- const cv=m==='real'?await drawReal(x):await drawBuild(x);if(picFor!==x)return;
- if(!cv){pics[m]={err:m==='real'?'The realistic picture isn’t available right now (the free daily limit may be used up). Please try again later, or use the Parts card.':'Could not draw the picture.'};if(mode===m)showPic();return}
+ const cv=await drawBuild(x);if(picFor!==x)return;
+ if(!cv){pics[m]={err:'Could not draw the picture.'};if(mode===m)showPic();return}
  const blob=await toBlob(cv);pics[m]=blob?{blob,url:URL.createObjectURL(blob)}:{err:'Product photos could not be added here. On the live site the picture includes them.'};if(mode===m)showPic()}
 async function openImage(){const d=$('imgdlg');d.showModal();
- if(picFor!==cur){picFor=cur;pics.card=pics.real=null;makePic('real',cur);makePic('card',cur)}showPic()}
-$('imgtabs').addEventListener('click',e=>{const m=e.target.dataset.m;if(m){mode=m;showPic()}});
+ if(picFor!==cur){picFor=cur;pics.card=null;makePic('card',cur)}showPic()}
 $('imgclose').addEventListener('click',()=>$('imgdlg').close());
-$('imgsave').addEventListener('click',()=>{if(!lastBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=`bindaaz-build-${mode==='real'?'photo':'parts'}-${Math.round(total(cur))}.png`;document.body.append(a);a.click();a.remove()});
+$('imgsave').addEventListener('click',()=>{if(!lastBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=`bindaaz-build-${Math.round(total(cur))}.png`;document.body.append(a);a.click();a.remove()});
 $('imgshare').addEventListener('click',async()=>{if(!lastBlob)return;const f=new File([lastBlob],'bindaaz-build.png',{type:'image/png'});
  try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],title:'My PC build',text:listText(cur)});else{await navigator.clipboard.writeText(listText(cur));toast('Sharing not supported here: list copied instead')}}catch(e){}});
 

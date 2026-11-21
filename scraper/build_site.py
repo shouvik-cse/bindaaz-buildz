@@ -135,7 +135,19 @@ def head_extra():
         gid = E(CFG["ga4_measurement_id"])
         x.append(f'<script async src="https://www.googletagmanager.com/gtag/js?id={gid}"></script>'
                  f"<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments)}}gtag('js',new Date());gtag('config','{gid}');</script>")
+        x.append(SHOP_CLICK_JS)
+    if CFG.get("cf_web_analytics_token"):
+        tok = json.dumps({"token": CFG["cf_web_analytics_token"]})
+        x.append(f"<script defer src=\"https://static.cloudflareinsights.com/beacon.min.js\" data-cf-beacon='{E(tok)}'></script>")
     return "\n".join(x)
+
+
+# Sends a "shop_click" event to Google Analytics whenever a visitor opens a shop link
+# (Buy buttons, product cards, price-page tables) — on every page of the site.
+SHOP_CLICK_JS = """<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a||!window.gtag)return;
+var h=a.hostname,s=/startech/.test(h)?'Star Tech':/ryans/.test(h)?'Ryans':/techland/.test(h)?'Tech Land':a.dataset.shop;if(!s)return;
+var c=a.closest('.row,.pcard,tr'),n=c&&c.querySelector('.nm,.pn,td');var cat=c&&c.querySelector('.cat,.pc');
+gtag('event','shop_click',{shop:s,product:((n&&n.textContent)||a.textContent||'').trim().slice(0,100),part_category:((cat&&cat.textContent)||'').trim(),link_url:a.href,page_path:location.pathname,transport_type:'beacon'})},true)</script>"""
 
 
 CSS = """:root{color-scheme:dark;--bg:#0b0814;--panel:#140f22;--line:#2b2244;--ink:#eeebf6;--mute:#a69fbd;--vio:#9d5cff;--vio2:#c9a2ff;--warn:#fbbf24}
@@ -373,7 +385,7 @@ def main():
         title = f"Best {en} Build Under {words} Taka in Bangladesh ({month})"
         if use == "gaming":
             exp = next(t for lim, t in EXPECT if b <= lim)
-            intro = f"The best gaming PC you can build for {tk(b)} right now, from parts in stock at Bangladeshi shops. Expect {exp}. Prices update several times a day, and you can swap any part."
+            intro = f"The best gaming PC you can build for {tk(b)} right now, from parts in stock at Bangladeshi shops. Expect {exp}. Prices update several times a day. You can swap any part."
         elif use == "creator":
             intro = f"A {tk(b)} PC for video editing, design and 3D work, weighted towards more CPU cores and a graphics card with good editing support. Built from parts in stock today."
         else:
@@ -419,13 +431,13 @@ def main():
     contact = (f'Email: <a href="mailto:{E(CFG["contact_email"])}">{E(CFG["contact_email"])}</a>' if CFG.get("contact_email") else "")
     fb = (f' · <a href="{E(CFG["facebook_page"])}">Facebook page</a>' if CFG.get("facebook_page") else "")
     urls.append(page("about", "About বিন্দাজ Buildz – How Prices Work & Disclaimer",
-                     "বিন্দাজ Buildz is an independent PC-builder and price-comparison site for Bangladesh. How we collect prices, how builds are chosen, and our disclaimer.",
+                     "বিন্দাজ Buildz is an independent PC-builder and price-comparison site for Bangladesh. How we collect prices, how builds are chosen and our disclaimer.",
                      f"""<h1>About বিন্দাজ Buildz</h1>
-<p class="lead">বিন্দাজ Buildz helps people in Bangladesh plan a desktop PC: pick a budget, get a complete and compatible build, and see where each part is cheapest today.</p>
+<p class="lead">বিন্দাজ Buildz helps people in Bangladesh plan a desktop PC: pick a budget, get a complete and compatible build and see where each part is cheapest today.</p>
 <h2>Where Prices Come From</h2><p>A program reads the public category pages of Star Tech, Ryans and Tech Land several times a day and records each product's name, price, stock status and link. We are not affiliated with any of these shops and don't sell anything ourselves. Every product links to the shop's own page.</p>
-<h2>How Builds Are Chosen</h2><p>The builder tries every processor and graphics card that fits your budget and choices. It scores each pairing for gaming, editing or office use and avoids lopsided pairs. It then adds a motherboard of the right class for the processor, and RAM, storage, power supply, case and cooler that are compatible and in stock. It checks socket, memory type, wattage, cooling and case size.</p>
+<h2>How Builds Are Chosen</h2><p>The builder tries every processor and graphics card that fits your budget and choices. It scores each pairing for gaming, editing or office use and avoids lopsided pairs. It then adds a motherboard of the right class for the processor. Then it picks RAM, storage, power supply, case and cooler that are compatible and in stock. It checks socket, memory type, wattage, cooling and case size.</p>
 <h2>Disclaimer</h2><p>Prices and stock change quickly and may differ in the shop, online or with bundle offers. Always confirm the final price, stock and warranty with the shop before you pay. Performance descriptions are general guidance, not guarantees.</p>
-<h2>Privacy</h2><p>The site has no accounts. Your budget and choices are remembered only in your own browser.{' We use Google Analytics to count visits.' if CFG.get('ga4_measurement_id') else ''}</p>
+<h2>Privacy</h2><p>The site has no accounts. Your budget and choices are remembered only in your own browser.{' We count visits and clicks on shop links with Google Analytics and Cloudflare Web Analytics, to see which parts people are interested in.' if (CFG.get('ga4_measurement_id') or CFG.get('cf_web_analytics_token')) else ''}</p>
 <h2>Contact</h2><p>{contact}{fb or ''}{'' if contact or fb else 'Shop owners and visitors can reach us through our social pages.'}</p>""",
                      [("About", f"{BASE}/about/")], None, upd_h))
 
