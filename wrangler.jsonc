@@ -1,0 +1,13 @@
+// Cloudflare Workers config: publishes the built site in dist/ and runs worker.js
+// for the /img photo service. Cloudflare reads this when it runs `npx wrangler deploy`.
+{
+  "name": "bindaaz-buildz",
+  "main": "worker.js",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}
