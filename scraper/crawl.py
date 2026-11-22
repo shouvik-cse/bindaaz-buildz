@@ -93,6 +93,17 @@ def allowed(url):
     return _robots[base].can_fetch(UA, url)
 
 
+def fix_encoding(r):
+    """Shops that don't name a charset in the HTTP header get decoded by requests as Latin-1,
+    which turns "৳" into "à§³" and hides every price. Use the page's <meta charset>, else UTF-8."""
+    ctype = r.headers.get("content-type", "").lower()
+    if "charset=" in ctype and "iso-8859-1" not in ctype:
+        return
+    head = r.content[:4096].decode("ascii", "ignore").lower()
+    m = re.search(r'<meta[^>]+charset=["\']?([\w-]+)', head)
+    r.encoding = m.group(1) if m and m.group(1) not in ("iso-8859-1", "latin-1") else "utf-8"
+
+
 def get(url):
     """Polite GET. Returns (status, html)."""
     if not allowed(url):
@@ -106,6 +117,7 @@ def get(url):
         try:
             r = session.get(url, timeout=30)
             if r.status_code == 200:
+                fix_encoding(r)
                 if len(r.text) < 60000 and CHALLENGE_RX.search(r.text[:20000]) and "৳" not in r.text and "Tk" not in r.text:
                     return "challenge", ""
                 return 200, r.text
@@ -187,18 +199,43 @@ def page_url(base, n, paging="query"):
     return urlunparse(p._replace(query=urlencode(q)))
 
 
+TAIL_RX = re.compile(r"\s*[-–|]?\s*(?:best\s+)?price\s+in\s+(?:bangladesh|bd)(?:\s+\d{4})?\s*$|\s+in\s+bd\s*$", re.I)
+CUT_RX = re.compile(r"\s*(?:\.{2,}|…)\s*$")
+
+
+def full_name(name, card, href=""):
+    """Shops cut long names on listing cards ("MSI PRO B760M-E DDR5 Micro-ATX M..."). The full name
+    is usually still in the link title or the photo's alt text; failing that, in the product URL."""
+    name = TAIL_RX.sub("", clean(name or ""))
+    if card is not None and (CUT_RX.search(name) or len(name) < 12):
+        stem = CUT_RX.sub("", name).lower()
+        opts = [clean(x.get("title")) for x in card.find_all(["a", "h2", "h3", "h4", "div", "span"]) if x.get("title")]
+        opts += [clean(i.get("alt")) for i in card.find_all("img") if i.get("alt")]
+        opts = [TAIL_RX.sub("", o) for o in opts if o]
+        best = [o for o in opts if o.lower().startswith(stem[:20]) and len(o) > len(stem)]
+        if best:
+            return max(best, key=len)
+        if CUT_RX.search(name) and href:
+            slug = urlparse(href).path.rstrip("/").rsplit("/", 1)[-1]
+            words = re.sub(r"[-_]+", " ", re.sub(r"\.\w+$", "", slug)).strip()
+            if words.lower().startswith(stem[:12].replace("-", " ")) and len(words) > len(stem):
+                return TAIL_RX.sub("", words)
+    return CUT_RX.sub("", name)
+
+
 def cards_by_selector(soup, url, sel):
     out = []
     for item in soup.select(sel["item"]):
         a = item.select_one(sel.get("name", "a[href]")) or item.find("a", href=True)
         if not a or not a.get("href"):
             continue
-        name = clean(a.get_text(" ")) or a.get("title", "")
+        href = urljoin(url, a["href"]).split("#")[0]
+        name = full_name(clean(a.get_text(" ")) or a.get("title", ""), item, href)
         pel = item.select_one(sel["price"]) if sel.get("price") else None
         price, st = card_price(pel or item)
         if OOS_RX.search(item.get_text(" ")):
             st = 0
-        out.append({"n": name, "p": price, "st": st, "u": urljoin(url, a["href"]).split("#")[0], "i": card_img(item, url)})
+        out.append({"n": name, "p": price, "st": st, "u": href, "i": card_img(item, url)})
     return out
 
 
@@ -245,7 +282,7 @@ def cards_generic(soup, url, skip_paths):
                 break
             box = box.parent
             img = card_img(box, url)
-        out.append({"n": name, "p": price, "st": st, "u": href, "i": img})
+        out.append({"n": full_name(name, box, href), "p": price, "st": st, "u": href, "i": img})
     return out
 
 
@@ -406,8 +443,9 @@ def main():
         done = {(r[0], r[1]) for r in report}
         items += [i for i in old.get("items", []) if (i["s"], i["c"]) not in done]
 
-    shops = sorted({i["s"] for i in items})
-    OUT.write_text(json.dumps({"updated": now(), "shops": shops, "items": items},
+    counts = {s["name"]: sum(1 for i in items if i["s"] == s["name"]) for s in cfg}
+    shops = [n for n, c in counts.items() if c]          # shops that have prices
+    OUT.write_text(json.dumps({"updated": now(), "shops": shops, "shopsAll": list(counts), "shopCounts": counts, "items": items},
                               ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"\n{len(items)} products from {len(shops)} shops -> {OUT}")
     summary(report)

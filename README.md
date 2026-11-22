@@ -1,6 +1,6 @@
 # বিন্দাজ Buildz
 
-A PC-builder website for Bangladesh. Pick a budget in taka (plus a CPU or GPU if you like) and it suggests a complete, balanced build from **real products currently listed by Star Tech, Ryans and Tech Land**. Every 6 hours a crawler reads every product in each shop's component categories, along with its price and stock status.
+A PC-builder website for Bangladesh. Pick a budget in taka (plus a CPU or GPU if you like) and it suggests a complete, balanced build from **real products currently listed by Star Tech, Ryans, Tech Land, PCB Store and Sumash Tech**, using the lowest in-stock price for every part. Every 6 hours a crawler reads every product in each shop's component categories, along with its price and stock status.
 
 ```
 site_config.json         your address, affiliate links, Search Console / Bing codes, Analytics id
@@ -9,7 +9,8 @@ site/                    the website source
   engine.js              parts table + build logic (used by the page AND by build_site.py)
   logo.webp, og-image.jpg, favicons
   catalog.json           written by the crawler, don't edit by hand
-worker.js, wrangler.jsonc  Cloudflare Worker: publishes dist/ and serves product photos for the "Build image" picture
+worker.js                Cloudflare Worker: serves shop product photos (/img) and the realistic AI picture of the PC (/render)
+wrangler.jsonc           Cloudflare settings: publish dist/, run worker.js, switch on the free Workers AI
 scraper/
   crawl.py               crawls all category pages of every shop (name, price, stock, link, photo)
   classify.py            turns product names into builder parts (socket, chipset, DDR type, GB, watts, ...)
@@ -24,7 +25,7 @@ scraper/
 
 - **Smart Build**
   - Pick a budget, what the PC is for, and optionally a CPU or GPU. You get a complete, compatible build of real in-stock products.
-  - Every part shows its **photo**, price, shop and a **"Buy at Star Tech / Ryans / Tech Land"** button that goes to that product's page.
+  - Every part shows its **photo**, price, shop and a **"Buy at <shop>"** button that goes to that product's page.
   - Processors and graphics cards use the cheapest in-stock listing of that model at any shop.
   - A520/A620 motherboards are avoided; they're only used if nothing else fits the budget.
   - Any part can be swapped.
@@ -48,7 +49,7 @@ GitHub collects the prices every 6 hours and saves them in the repository. Cloud
    - Build command: `pip install -r scraper/requirements.txt && python scraper/build_site.py`
    - Build output directory: `dist`
    - Environment variable: `PYTHON_VERSION` = `3.12`
-   Click **Save and Deploy**. `wrangler.jsonc` tells Cloudflare to publish the `dist` folder and run `worker.js` for product photos.
+   Click **Save and Deploy**. `wrangler.toml` switches on Workers AI for the realistic PC picture, and the `functions/` folder (photos and AI picture) is picked up automatically. If the realistic picture says it isn't available, add the AI binding by hand: **Settings → Bindings → Add → Workers AI**, variable name `AI`, then redeploy.
 5. **Set your address:** put the `https://….pages.dev` address Cloudflare shows in `base_url` in `site_config.json` and commit. Cloudflare rebuilds by itself.
 6. **Collect the products:** go to **Actions → Update products → Run workflow**. The first crawl takes about 20–40 minutes. When it saves `catalog.json`, Cloudflare publishes the site with all products a minute or two later.
 
@@ -89,6 +90,10 @@ I couldn't open the shops' pages while building this. The page addresses in `scr
 
 - **Star Tech, Ryans:** taken from their site menus.
 - **Tech Land:** only the processor page is confirmed; the other seven are my best guesses.
+- **PCB Store:** all eight category pages confirmed.
+- **Sumash Tech:** processor, motherboard and graphics card pages confirmed; for the rest the crawler tries the likely address, then finds the link by name in the shop's menu.
+
+Run **Actions → Check shops** (about 3 minutes) after changing `shops.json`: its Summary page shows, per shop, how many products were found and why any category failed.
 
 Before relying on the crawl, run this on your own computer:
 

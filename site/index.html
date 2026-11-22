@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>বিন্দাজ Buildz – PC Build by Budget in Bangladesh | Live Prices</title>
-<meta name="description" content="Set a budget in taka and get a complete, compatible PC build with the lowest price for every part from 7 Bangladeshi shops, including Star Tech, Ryans and Tech Land. বাজেট অনুযায়ী গেমিং ও অফিস পিসি বিল্ড।">
+<meta name="description" content="Set a budget in taka and get a complete, compatible PC build with the lowest price for every part from 5 Bangladeshi shops: Star Tech, Ryans, Tech Land, PCB Store and Sumash Tech. বাজেট অনুযায়ী গেমিং ও অফিস পিসি বিল্ড।">
 <meta name="theme-color" content="#0b0814">
 <!--SEO-->
 <link rel="canonical" href="__BASE__/">
@@ -251,7 +251,7 @@ input[type=range]{height:44px;touch-action:pan-y}
 <section class="band" id="faq"><div class="wrap" style="max-width:860px">
   <h2>Questions People Ask</h2>
   <details open><summary>How much does a gaming PC cost in Bangladesh right now?</summary><p>A PC that plays esports games at 1080p starts around ৳70,000. A solid 1080p high-settings build with an RTX 5060 or RX 9060 XT costs about ৳90,000–1,10,000. 1440p gaming with an RTX 5070 or RX 9070 XT starts around ৳1,60,000. RAM and SSD prices are high in 2026. That is why the builder starts you on 16 GB and 512 GB and lets you add more.</p></details>
-  <details><summary>Where do the prices come from?</summary><p>From the product pages of Star Tech, Ryans, Tech Land, PCB Store, Sumash Tech, Creatus Computer and Computer Mania BD, read automatically several times a day. For every part the builder compares the shops and uses the lowest price that is in stock. Each part shows which shop the price is from, with a link. Always confirm the price and warranty with the shop before buying.</p></details>
+  <details><summary>Where do the prices come from?</summary><p>From the product pages of Star Tech, Ryans, Tech Land, PCB Store and Sumash Tech, read automatically several times a day. For every part the builder compares the shops and uses the lowest price that is in stock. Each part shows which shop the price is from, with a link. Always confirm the price and warranty with the shop before buying.</p></details>
   <details><summary>Does the build include a monitor, keyboard or mouse?</summary><p>No. Every build covers the processor, graphics card, motherboard, RAM, SSD, power supply, case and CPU cooler. Monitor, keyboard, mouse and Windows licence are extra.</p></details>
   <details><summary>Will all the parts work together?</summary><p>Yes. The builder checks the CPU socket against the motherboard, DDR4 or DDR5 memory, power supply wattage, cooler capacity and case size. It also picks a motherboard of the right class for the processor. A Ryzen 7 never sits on an entry-level board.</p></details>
   <details><summary>বাংলায় কীভাবে ব্যবহার করব?</summary><p>আপনার বাজেট টাকায় লিখুন, গেমিং, এডিটিং বা অফিস বেছে নিন। চাইলে নির্দিষ্ট প্রসেসর বা গ্রাফিক্স কার্ড বেছে নিতে পারেন। বিন্দাজ Buildz বাকি সব পার্টস বেছে দেবে, দোকানের আজকের দামসহ।</p></details>
@@ -445,7 +445,7 @@ $('resetP').addEventListener('click',()=>{BB.OV={};try{localStorage.removeItem('
 /* ---------- all products ---------- */
 let climit=48,qt;
 $('ccat').innerHTML='<option value="">All Categories</option>'+SLOTS.map(k=>`<option value="${k}">${LAB[k]}</option>`).join('');
-function renderCat(){const CAT=BB.CAT;if(BB.META&&!full){$('cstatus').textContent='Loading all products…';return}if(!BB.META){$('cgrid').innerHTML='';$('cmore').hidden=true;$('cstatus').textContent='Every product from all 7 shops, with photos and buy links, appears here when the site is hosted with the product crawler.';return}
+function renderCat(){const CAT=BB.CAT;if(BB.META&&!full){$('cstatus').textContent='Loading all products…';return}if(!BB.META){$('cgrid').innerHTML='';$('cmore').hidden=true;$('cstatus').textContent='Every product from all 5 shops, with photos and buy links, appears here when the site is hosted with the product crawler.';return}
  const q=$('q').value.trim().toLowerCase().split(/\s+/).filter(Boolean),c=$('ccat').value,sh=$('cshop').value,so=$('csort').value,st=$('cstock').checked;
  const L=CAT.filter(i=>(!c||i.c===c)&&(!sh||i.s===sh)&&(!st||i.st)&&q.every(w=>i.n.toLowerCase().includes(w)));
  L.sort(so==='n'?(a,b)=>a.n.localeCompare(b.n):so==='-p'?(a,b)=>(b.p||0)-(a.p||0):(a,b)=>(a.p||9e9)-(b.p||9e9));
@@ -468,9 +468,12 @@ renderPrices();render();mbar();
 /* live data: parts.json (what Smart Build needs, small) loads first; the full catalogue loads when All products comes near the screen */
 async function getJSON(f){try{const r=await fetch(ROOT+f,{cache:'no-cache'});return r.ok?await r.json():null}catch(e){return null}}
 let full=false,fullP=null;
+/* every shop the site reads, with its product count; a shop with no prices this time stays listed */
+function fillShops(j){const all=j.shopsAll||j.shops||[],n=j.shopCounts||{};
+ $('cshop').innerHTML='<option value="">All Shops</option>'+all.map(x=>{const c=n[x];return`<option value="${esc(x)}"${c===0?' disabled':''}>${esc(x)}${c===0?' (prices updating)':c?` (${c.toLocaleString('en-IN')})`:''}</option>`}).join('')}
 function loadFull(){if(fullP)return fullP;fullP=(async()=>{const j=await getJSON('catalog.json');if(j&&Array.isArray(j.items)&&j.items.length){BB.CAT=j.items;full=true;if(!BB.META){BB.applyCatalog(j);rerun();renderPrices()}}renderCat()})();return fullP}
 (async()=>{let j=await getJSON('parts.json');if(!(j&&Array.isArray(j.items)&&j.items.length)){j=await getJSON('catalog.json');if(j&&j.items&&j.items.length)full=true}
- if(j&&Array.isArray(j.items)&&j.items.length){BB.applyCatalog(j);if(j.total)BB.META.total=j.total;$('cshop').innerHTML='<option value="">All Shops</option>'+(j.shops||[]).map(x=>`<option>${esc(x)}</option>`).join('');
+ if(j&&Array.isArray(j.items)&&j.items.length){BB.applyCatalog(j);if(j.total)BB.META.total=j.total;fillShops(j);
   $('pstatus').textContent=status();renderPrices();rerun()}
  if(full)renderCat();else{try{new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){o.disconnect();loadFull()}},{rootMargin:'600px'}).observe($('products'))}catch(e){loadFull()}}})();
 $('q').addEventListener('focus',()=>loadFull(),{once:true});

@@ -105,9 +105,10 @@ def models(block):
 AFF = {k: v for k, v in (CFG.get("affiliate_templates") or {}).items() if v}
 _SHOPS = json.loads((ROOT / "scraper" / "shops.json").read_text(encoding="utf-8"))["shops"] if (ROOT / "scraper" / "shops.json").exists() else []
 SHOP_NAMES = [x["name"] for x in _SHOPS] or ["Star Tech", "Ryans", "Tech Land"]
+and_list = lambda xs: ", ".join(xs[:-1]) + " and " + xs[-1] if len(xs) > 1 else "".join(xs)
 SHOP_HOSTS = {re.sub(r"^www\.", "", x["base"].split("//")[1].split("/")[0]): x["name"] for x in _SHOPS}
 SHOPS_TEXT = ", ".join(SHOP_NAMES[:-1]) + " and " + SHOP_NAMES[-1]
-SHOPS_SHORT = ", ".join(SHOP_NAMES[:3]) + (f" and {len(SHOP_NAMES) - 3} more shops" if len(SHOP_NAMES) > 3 else "")
+SHOPS_SHORT = SHOPS_TEXT if len(SHOP_NAMES) <= 5 else ", ".join(SHOP_NAMES[:3]) + f" and {len(SHOP_NAMES) - 3} more shops"
 
 
 def buy(url, shop):
@@ -255,7 +256,8 @@ def main():
     catalog = json.loads(cat_path.read_text(encoding="utf-8")) if cat_path.exists() else {"items": []}
     items = catalog.get("items", [])
     if items:  # small file with only what Smart Build needs; the full catalogue loads later, on demand
-        lite = {"updated": catalog.get("updated"), "shops": catalog.get("shops", []), "total": len(items),
+        lite = {"updated": catalog.get("updated"), "shops": catalog.get("shops", []), "shopsAll": catalog.get("shopsAll") or SHOP_NAMES,
+                "shopCounts": catalog.get("shopCounts") or {}, "total": len(items),
                 "items": [i for i in items if i.get("m") or i.get("a")]}
         (DIST / "parts.json").write_text(json.dumps(lite, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     updated_iso = catalog.get("updated") or dt.datetime.now(dt.timezone.utc).isoformat()
@@ -365,7 +367,7 @@ def main():
         urls.append(page("price", f"PC Component Price List in Bangladesh ({month})",
                          f"Compare today's prices for processors, graphics cards, motherboards, RAM, SSDs, power supplies, casings and coolers from {SHOPS_SHORT}.",
                          f"""<h1>PC Component Prices in Bangladesh</h1><p class="bn lead">কম্পিউটার পার্টসের দাম · {month}</p>
-<p class="lead">{len(items):,} products from {', '.join(catalog.get('shops', []))}, checked {upd_h}.</p>
+<p class="lead">{len(items):,} products from {and_list(catalog.get('shops', []))}. Checked {upd_h}.</p>
 <div class="cards">{''.join(cat_cards)}</div><h2>Processor and Graphics Card Models</h2><div class="grid">{model_links}</div>""",
                          [("Price guides", f"{BASE}/price/")], None, upd_h))
 

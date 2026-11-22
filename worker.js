@@ -5,7 +5,7 @@
 //                            a realistic AI picture of the assembled PC (Cloudflare Workers AI, free
 //                            daily allowance). Only fixed option values are accepted (240 combinations)
 //                            and every picture is cached for 30 days, so each one is generated once.
-const ALLOWED = ["startech.com.bd", "ryans.com", "techlandbd.com", "pcbstore.com.bd", "sumashtech.com", "creatus.com.bd", "computermania.com.bd"];
+const ALLOWED = ["startech.com.bd", "ryans.com", "techlandbd.com", "pcbstore.com.bd", "sumashtech.com"];
 
 async function photo(url) {
   let target;

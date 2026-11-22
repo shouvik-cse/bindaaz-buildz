@@ -4,6 +4,7 @@ The site is built from the sample shop pages, served locally, and used like a vi
 External things are replaced: product photos and the AI picture return a test image, web fonts are skipped.
 Run:  pip install pytest playwright && playwright install chromium && pytest tests/e2e
 """
+import re
 import functools
 import http.server
 import sys
@@ -127,7 +128,7 @@ def test_U06_buy_links(browser, site_url):
     for text, href, rel, target in links:
         shop = text.replace("Buy at ", "")
         domain = {"Star Tech": "startech.com.bd", "Ryans": "ryans.com", "Tech Land": "techlandbd.com", "PCB Store": "pcbstore.com.bd",
-                  "Sumash Tech": "sumashtech.com", "Creatus Computer": "creatus.com.bd", "Computer Mania BD": "computermania.com.bd"}[shop]
+                  "Sumash Tech": "sumashtech.com"}[shop]
         assert domain in href and "noopener" in rel and "nofollow" in rel and target == "_blank"
 
 
@@ -306,3 +307,20 @@ def test_U20_search_popup_fits_phone_screen(browser, site_url):
     p.locator("#sheet .row .sp-btn").first.click()
     box = p.locator(".sp-pop").bounding_box()
     assert box["x"] >= 0 and box["x"] + box["width"] <= 390 and box["y"] >= 0 and box["y"] + box["height"] <= 844
+
+
+def test_U21_shop_menu_lists_all_five_shops(browser, site_url):
+    """TC-U21 [FR-08] the Shops menu in All Products lists all 5 shops with their product counts,
+    and choosing one shows only that shop's products."""
+    p = new_page(browser)
+    ready(p, site_url + "/")
+    opts = p.eval_on_selector_all("#cshop option", "os => os.map(o => o.textContent)")
+    names = [o.split(" (")[0] for o in opts[1:]]
+    assert names == ["Star Tech", "Ryans", "Tech Land", "PCB Store", "Sumash Tech"], opts
+    assert all(re.search(r"\(\d[\d,]*\)$", o) for o in opts[1:])
+    p.evaluate("document.getElementById('products').scrollIntoView()")
+    p.wait_for_selector("#cgrid a.pcard")
+    p.select_option("#cshop", "Sumash Tech")
+    p.wait_for_timeout(400)
+    shops = set(p.eval_on_selector_all("#cgrid a.pcard", "cs => cs.map(c => c.querySelector('.sh, .shop')?.textContent || c.textContent)"))
+    assert shops and all("Sumash Tech" in t for t in shops)

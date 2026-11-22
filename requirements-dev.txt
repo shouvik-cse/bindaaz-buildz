@@ -1,0 +1,5 @@
+# Test tools (not needed by the website itself)
+-r scraper/requirements.txt
+pytest>=8
+pytest-cov>=5
+playwright>=1.45

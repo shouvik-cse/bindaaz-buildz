@@ -35,7 +35,7 @@ describe("Website files", () => {
 
 describe("NFR-03 /img photo service security", () => {
   test("TC-W02 [EP] photos from the three shops (and their subdomains) are allowed", async () => {
-    for (const u of ["https://www.startech.com.bd/a.jpg", "https://ryans.com/b.png", "https://cdn.techlandbd.com/c.webp", "https://pcbstore.com.bd/d.jpg", "https://www.sumashtech.com/e.jpg", "https://www.creatus.com.bd/f.jpg", "https://computermania.com.bd/g.webp"]) {
+    for (const u of ["https://www.startech.com.bd/a.jpg", "https://ryans.com/b.png", "https://cdn.techlandbd.com/c.webp", "https://pcbstore.com.bd/d.jpg", "https://www.sumashtech.com/e.jpg"]) {
       const r = await get("/img?u=" + encodeURIComponent(u));
       assert.equal(r.status, 200, u);
       assert.equal(r.headers.get("access-control-allow-origin"), "*");

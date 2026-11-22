@@ -4,8 +4,10 @@ Three page layouts imitate the real shops:
   * "Star Tech" style  - .p-item cards, "39,900৳ 43,850৳" new/old price, "Save: …" badge, lazy data-src photos
   * "Ryans" style      - generic cards, "Tk 48,300", photo in a sibling link outside the price box
   * "Tech Land" style  - <li> cards, "৳ 41,999" with a struck-through old price and an EMI line
-  * "OpenCart" style   - Creatus / PCB Store / Sumash Tech: "66,800৳ 70,500৳" new/old + "Ex Tax:66,800৳"
-  * "WooCommerce" style - Computer Mania BD: "৳ 74,000", "Sold out" badge, /page/2/ paging
+  * "OpenCart" style   - PCB Store / Sumash Tech: "66,800৳ 70,500৳" new/old + "Ex Tax:66,800৳"
+                         Sumash Tech cuts long names on cards ("MSI PRO B760M-E DDR5 Micro-ATX M...") and keeps
+                         the full name in the photo's alt text, followed by " Price In Bangladesh"
+  * "WooCommerce" style - a WordPress shop: "৳ 74,000", "Sold out" badge, /page/2/ paging (unit tests only)
 
 Sumash Tech's sample site only answers its first category path for the processor; every other
 category is found through the links in its menu page (tests the crawler's discovery).
@@ -22,11 +24,10 @@ ROOT = Path(__file__).resolve().parents[2]
 ENGINE = ROOT / "site" / "engine.js"
 TABLES = {"cpu": "C", "gpu": "G", "board": "B", "ram": "R", "ssd": "S", "psu": "P", "case": "K", "cooler": "Q"}
 SHOPS = {"www.startech.com.bd": "startech", "www.ryans.com": "ryans", "www.techlandbd.com": "techland",
-         "pcbstore.com.bd": "opencart", "www.sumashtech.com": "opencart", "www.creatus.com.bd": "opencart",
-         "computermania.com.bd": "woo"}
+         "pcbstore.com.bd": "opencart", "www.sumashtech.com": "opencart"}
 PRICE_FACTOR = {"startech": 1.0, "ryans": 1.03, "techland": 0.98, "opencart": 0.97, "woo": 1.01}
 # per-host tweak so shops don't all quote the same price
-HOST_FACTOR = {"pcbstore.com.bd": 1.0, "www.sumashtech.com": 1.02, "www.creatus.com.bd": 0.99}
+HOST_FACTOR = {"pcbstore.com.bd": 1.0, "www.sumashtech.com": 1.02}
 SUMASH_MENU = {"cooler": "/cat/cpu-cooler", "board": "/cat/motherboard", "ram": "/cat/ram", "ssd": "/cat/ssd",
                "gpu": "/cat/graphics-card", "psu": "/cat/power-supply", "case": "/cat/casing"}
 MENU_WORDS = {"cooler": "CPU Cooler", "board": "Motherboard", "ram": "RAM", "ssd": "SSD", "gpu": "Graphics Card",
@@ -103,17 +104,23 @@ def techland_page(items):
     return f'<html><body><ul class="grid">{cards}</ul></body></html>'
 
 
-def opencart_page(items, host="www.creatus.com.bd"):
+def _cut(n, host):
+    """Sumash Tech shows only the first 32 characters of a name on its cards."""
+    return n[:32] + "..." if host == "www.sumashtech.com" and len(n) > 35 else n
+
+
+def opencart_page(items, host="pcbstore.com.bd"):
+    alt = (lambda n: f"{n} Price In Bangladesh") if host == "www.sumashtech.com" else (lambda n: n)
     cards = "".join(
         f'<div class="product-layout"><div class="product-thumb"><div class="image"><a href="https://{host}/{_slug(n)}">'
-        f'<img src="{_img(n, host)}" alt="{n}"></a></div><div class="caption"><div class="name"><a href="https://{host}/{_slug(n)}">{n}</a></div>'
+        f'<img src="{_img(n, host)}" alt="{alt(n)}"></a></div><div class="caption"><div class="name"><a href="https://{host}/{_slug(n)}">{_cut(n, host)}</a></div>'
         + (f'<div class="price"><span class="price-new">{p:,}৳</span> <span class="price-old">{int(p * 1.06):,}৳</span>'
            f'<span class="price-tax">Ex Tax:{p:,}৳</span></div>' if s else '<div class="price"><span class="price-new">call for price ৳</span></div><div class="stock">Out Of Stock</div>')
         + '</div></div></div>' for n, p, s in items)
     return f'<html><body><div class="main-products">{cards}</div><div class="pagination-results">Showing 1 to 20</div></body></html>'
 
 
-def woo_page(items, host="computermania.com.bd"):
+def woo_page(items, host="shop.example.com.bd"):
     cards = "".join(
         f'<li class="product"><a href="https://{host}/product/{_slug(n)}/" class="woocommerce-LoopProduct-link">'
         f'<img src="{_img(n, host)}" alt="{n} in bd"><h2 class="woocommerce-loop-product__title">{n}</h2>'

@@ -129,7 +129,7 @@ def test_integration_prices_match_source(sample_catalog):
         if i["st"] and key in expected:
             assert i["p"] == expected[key], f"{i['s']} {i['n']}: {i['p']} != {expected[key]}"
             checked += 1
-    assert checked > 700
+    assert checked > 600  # every in-stock product of all 5 shops (130 each)
 
 
 def test_integration_classification_rate(sample_catalog):
@@ -159,20 +159,20 @@ def test_integration_discovers_renamed_category_pages(sample_catalog):
 
 def test_path_paging_and_woocommerce_cards():
     """TC-K14 [EP] WordPress shops page with /page/2/; WooCommerce cards give price, 'Sold out' and photo."""
-    assert crawl.page_url("https://computermania.com.bd/product-category/x/", 2, "path") == "https://computermania.com.bd/product-category/x/page/2/"
-    assert crawl.page_url("https://computermania.com.bd/product-category/x/", 1, "path") == "https://computermania.com.bd/product-category/x/"
+    assert crawl.page_url("https://shop.example.com.bd/product-category/x/", 2, "path") == "https://shop.example.com.bd/product-category/x/page/2/"
+    assert crawl.page_url("https://shop.example.com.bd/product-category/x/", 1, "path") == "https://shop.example.com.bd/product-category/x/"
     html = fixture_shops.woo_page([("MSI MAG B650 Tomahawk WiFi Motherboard", 31500, True), ("ASRock B450M Pro4 Motherboard", 9800, False)])
-    shop = {"name": "CM", "base": "https://computermania.com.bd", "categories": {}}
-    a, b = crawl.parse_listing(html, "https://computermania.com.bd/product-category/desktop-components/motherboard/", shop)
+    shop = {"name": "WP", "base": "https://shop.example.com.bd", "categories": {}}
+    a, b = crawl.parse_listing(html, "https://shop.example.com.bd/product-category/desktop-components/motherboard/", shop)
     assert (a["p"], a["st"]) == (31500, 1) and a["i"].endswith(".jpg")
     assert b["st"] == 0
 
 
 def test_opencart_cards_ignore_old_and_tax_price():
-    """TC-K15 [EP] OpenCart cards (Creatus, PCB Store): current price, not old price or 'Ex Tax' line; 'call for price' = out of stock."""
+    """TC-K15 [EP] OpenCart cards (PCB Store, Sumash Tech): current price, not old price or 'Ex Tax' line; 'call for price' = out of stock."""
     html = fixture_shops.opencart_page([("Gigabyte GeForce RTX 5060 Eagle OC 8GB Graphics Card", 41800, True), ("PNY RTX 2060 12GB", 0, False)])
-    shop = {"name": "C", "base": "https://www.creatus.com.bd", "categories": {}}
-    a, b = crawl.parse_listing(html, "https://www.creatus.com.bd/graphics-card", shop)
+    shop = {"name": "C", "base": "https://pcbstore.com.bd", "categories": {}}
+    a, b = crawl.parse_listing(html, "https://pcbstore.com.bd/pc-components/graphics-card", shop)
     assert (a["p"], a["st"]) == (41800, 1)
     assert b["st"] == 0
 
@@ -181,6 +181,7 @@ def test_bot_check_page_is_reported_not_parsed(monkeypatch):
     """TC-K16 [error guessing] a 'Just a moment…' / captcha page is reported as a bot check, with the reason in plain words."""
     class R:
         status_code, text = 200, "<html><title>Just a moment...</title><div id='cf-chl-widget'></div></html>"
+        headers, content, encoding = {"content-type": "text/html; charset=utf-8"}, b"", "utf-8"
     monkeypatch.setattr(crawl, "allowed", lambda u: True)
     monkeypatch.setattr(crawl.session, "get", lambda url, timeout: R())
     monkeypatch.setattr(crawl, "DELAY", (0, 0))
@@ -198,3 +199,55 @@ def test_summary_explains_each_failing_shop(tmp_path, monkeypatch, capsys):
     assert "Star Tech" in log and "refuses automated requests" in log and "robots.txt" in log
     table = out.read_text()
     assert "| Ryans | 120 | 110 | none |" in table and "| Star Tech | 0 | 0 |" in table
+
+
+def test_page_without_charset_is_read_as_utf8():
+    """TC-K18 [error guessing, DEF-19] a shop that sends no charset in its HTTP header must not lose the ৳ sign
+    (requests would decode the page as Latin-1: '৳' -> 'à§³', so no price is found)."""
+    import requests
+    html = '<html><head><meta charset="utf-8"></head><body><div class="p-item"><a href="/x">AMD Ryzen 5 7600 Processor</a><span>21,500৳</span></div></body></html>'
+    r = requests.models.Response()
+    r._content, r.status_code, r.headers["content-type"] = html.encode("utf-8"), 200, "text/html"
+    r.encoding = "ISO-8859-1"
+    assert "৳" not in r.text
+    crawl.fix_encoding(r)
+    assert "21,500৳" in r.text
+    r2 = requests.models.Response()
+    r2._content, r2.headers["content-type"] = "<p>Tk 9,800 ৳</p>".encode("utf-8"), "text/html"
+    r2.encoding = "ISO-8859-1"
+    crawl.fix_encoding(r2)
+    assert "৳" in r2.text
+
+
+@pytest.mark.parametrize("shown, alt, want", [
+    ("MSI PRO B760M-E DDR5 Micro-ATX M...", "MSI PRO B760M-E DDR5 Micro-ATX Motherboard Price In Bangladesh", "MSI PRO B760M-E DDR5 Micro-ATX Motherboard"),
+    ("PowerColor Fighter AMD Radeon RX…", "PowerColor Fighter AMD Radeon RX 6500 XT 4GB GDDR6 Graphics Card Price In Bangladesh",
+     "PowerColor Fighter AMD Radeon RX 6500 XT 4GB GDDR6 Graphics Card"),
+    ("Asus TUF Gaming 850W 80 Plus Gold Power Supply Price in BD", "", "Asus TUF Gaming 850W 80 Plus Gold Power Supply"),
+    ("Intel Core i5 14400 Processor", "something else", "Intel Core i5 14400 Processor"),
+])
+def test_cut_names_are_completed(shown, alt, want):
+    """TC-K19 [EP] cut-off card names ("...", "…") are completed from the photo's alt text; shop suffixes like
+    'Price In Bangladesh' are removed, so the classifier sees the real model name."""
+    from bs4 import BeautifulSoup
+    card = BeautifulSoup(f'<div><a href="/p"><img src="/i.jpg" alt="{alt}"></a><a href="/p">{shown}</a></div>', "html.parser").div
+    assert crawl.full_name(shown, card, "https://www.sumashtech.com/p") == want
+
+
+def test_integration_sumash_names_are_complete_and_classified(sample_catalog):
+    """TC-K20 [integration] every Sumash Tech product in the sample crawl has its full name (none end in '...')
+    and as many are usable by the builder as at the shops that show full names."""
+    sm = [i for i in sample_catalog["items"] if i["s"] == "Sumash Tech"]
+    pc = [i for i in sample_catalog["items"] if i["s"] == "PCB Store"]
+    assert sm and not any(i["n"].endswith("...") or "Price In Bangladesh" in i["n"] for i in sm)
+    usable = lambda xs: sum(1 for i in xs if "m" in i or "a" in i)
+    assert usable(sm) == usable(pc)
+
+
+def test_catalogue_lists_every_configured_shop(sample_catalog):
+    """TC-K21 [FR-08] the catalogue names all 5 configured shops with a product count each, so the site can list
+    every shop even if one had a bad day."""
+    want = [s["name"] for s in json.loads((ROOT / "scraper/shops.json").read_text())["shops"]]
+    assert want == ["Star Tech", "Ryans", "Tech Land", "PCB Store", "Sumash Tech"]
+    assert sample_catalog["shopsAll"] == want
+    assert all(sample_catalog["shopCounts"][s] > 100 for s in want)
